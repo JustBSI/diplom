@@ -1,5 +1,4 @@
-import re
-from tkinter import *
+from config import *
 from tkinter.filedialog import *
 import fileinput
 
@@ -17,24 +16,6 @@ def convert(str):
 
 a=[1,0,1,1,0,1,1,0]
 b=[1,0,1,0,1,1,0,0]
-
-# rg_in.set(a)
-# rg_a.set(rg_in.data)
-# rg_in.set(b)
-# rg_b.set(rg_in.data)
-# rg_sm.set(sum.add(rg_a.data,rg_b.data,0)[0])
-# result=sum.add(rg_a.data,rg_b.data,0)
-# print(rg_a.data)
-# print(rg_b.data)
-# print(rg_sm.data)
-# print(result)
-
-# f=open('test.txt',"r")
-# line = f.readline()
-# while line:
-#     print(line),
-#     line = f.readline()
-# f.close()
 
 # def parser(filename):
 #     f=open(filename,'r',encoding='utf-8')
@@ -83,7 +64,6 @@ class Lexer:
             elif len(roow.replace('0','').replace('1',''))==0:
                 result.append(self.NUM)
         return result
-#print(dict)
 a=Lexer()
 
 def execute(row):
@@ -111,26 +91,24 @@ print(dict['РгСМ'].data)
 # print(c[1])
 # print(c[2])
 #print(convert("1001"))
-wc=350
-hc=290
-c = Canvas(root, width=wc, height=hc, bg='white')
+c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 c.pack(side=LEFT)
-dict['РгВх'].display(0,0,c)
-c.create_line((wc/2), 45, (wc/2), 60)
-c.create_line((wc/2)-80, 60, (wc/2)+80, 60)
-c.create_line((wc/2)-80, 60, (wc/2)-80, 80, arrow=LAST)
-c.create_line((wc/2)+80, 60, (wc/2)+80, 80, arrow=LAST)
-dict['РгА'].display(-80,80,c)
-c.create_line((wc/2)-80, 125, (wc/2)-80, 150)
-c.create_line((wc/2)-80, 150, (wc/2)-35, 150)
-c.create_line((wc/2)-35, 150, (wc/2)-35, 175, arrow=LAST)
-dict['РгБ'].display(80,80,c)
-c.create_line((wc/2)+80, 125, (wc/2)+80, 150)
-c.create_line((wc/2)+80, 150, (wc/2)+35, 150)
-c.create_line((wc/2)+35, 150, (wc/2)+35, 175, arrow=LAST)
-dict['СМ'].display(0,160,c)
-c.create_line((wc/2), 210, (wc/2), 240, arrow=LAST)
-dict['РгСМ'].display(0,240,c)
+dict['РгВх'].display(0,0,c,CANVAS_WIDTH)
+c.create_line((CANVAS_WIDTH/2), 45, (CANVAS_WIDTH/2), 60)
+c.create_line((CANVAS_WIDTH/2)-80, 60, (CANVAS_WIDTH/2)+80, 60)
+c.create_line((CANVAS_WIDTH/2)-80, 60, (CANVAS_WIDTH/2)-80, 80, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2)+80, 60, (CANVAS_WIDTH/2)+80, 80, arrow=LAST)
+dict['РгА'].display(-80,80,c,CANVAS_WIDTH)
+c.create_line((CANVAS_WIDTH/2)-80, 125, (CANVAS_WIDTH/2)-80, 150)
+c.create_line((CANVAS_WIDTH/2)-80, 150, (CANVAS_WIDTH/2)-35, 150)
+c.create_line((CANVAS_WIDTH/2)-35, 150, (CANVAS_WIDTH/2)-35, 175, arrow=LAST)
+dict['РгБ'].display(80,80,c,CANVAS_WIDTH)
+c.create_line((CANVAS_WIDTH/2)+80, 125, (CANVAS_WIDTH/2)+80, 150)
+c.create_line((CANVAS_WIDTH/2)+80, 150, (CANVAS_WIDTH/2)+35, 150)
+c.create_line((CANVAS_WIDTH/2)+35, 150, (CANVAS_WIDTH/2)+35, 175, arrow=LAST)
+dict['СМ'].display(0,160,c,CANVAS_WIDTH)
+c.create_line((CANVAS_WIDTH/2), 210, (CANVAS_WIDTH/2), 240, arrow=LAST)
+dict['РгСМ'].display(0,240,c,CANVAS_WIDTH)
 
 def step():
     c.move('mark', 0,18)

@@ -1,8 +1,5 @@
 from tkinter import *
 
-wc=350
-hc=290
-
 class Trigger:
 
     def __init__(self, name):
@@ -31,7 +28,7 @@ class Register:
         for i in self.data:
             i=0
 
-    def display(self, x, y, c):
+    def display(self, x, y, c, wc):
         c.create_text((wc/2)+x, y+10, text=self.name, anchor=CENTER)
         c.create_rectangle((wc/2)+x-(125/2), y+20, (wc/2)+x+(125/2), y+40, fill='white')
         xa = 0+(wc/2)+x-(145/2)
@@ -81,7 +78,7 @@ class Adder:
                     overflow=overflow^carry
             return(c,carry,overflow)
 
-    def display(self, x, y, c):
+    def display(self, x, y, c, wc):
         c.create_text((wc/2)+x,y+10,text=self.name, anchor=CENTER)
         c.create_polygon(x+((wc/2)-50), y+20, x+40+((wc/2)-50), y+20, x+50+((wc/2)-50), y+30, x+60+((wc/2)-50), y+20, x+100+((wc/2)-50), y+20, x+80+((wc/2)-50), y+43, x+20+((wc/2)-50), y+43, outline='black', fill='white')
         print (x)
