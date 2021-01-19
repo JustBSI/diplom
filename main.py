@@ -1,3 +1,4 @@
+import re
 from config import *
 from tkinter.filedialog import *
 import fileinput
