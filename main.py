@@ -76,6 +76,7 @@ def execute(row):
         dict[c[0]].set(dict[c[2]].data)
     elif b==[1,0,1,2,1]:
         dict[c[0]].set(dict['СМ'].add(dict[c[2]].data,dict[c[4]].data,0)[0])
+    print("we do exec"+row)
 
 # f=open('test.txt','r',encoding='utf-8')
 # for row in f:
@@ -111,30 +112,45 @@ dict['СМ'].display(0,160,c,CANVAS_WIDTH)
 c.create_line((CANVAS_WIDTH/2), 210, (CANVAS_WIDTH/2), 240, arrow=LAST)
 dict['РгСМ'].display(0,240,c,CANVAS_WIDTH)
 
-def step():
+class classCounter:
+
+    def __init__ (self):
+        self.count=0
+
+    def inc(self):
+        self.count += 1
+
+    def __repr__(self):
+        return self.count
+
+
+def step(e, rows, i):
     c.move('mark', 0,18)
-    with open('test.txt','r',encoding='utf-8') as f:
-        rows=f.readlines()
-        rows=[line.rstrip('\n') for line in open('test.txt','r',encoding='utf-8')]
-    execute(rows[i])
+    #rows=[line.rstrip('\n') for line in open('test.txt','r',encoding='utf-8')]
+    #for row in rows:
+    execute(rows[i.count])
+    i.inc()
 
 
 def reset():
     c.coords('mark',335, 65, 350, 65)
 
+cc=classCounter()
+
 #c.create_rectangle(335, 10, 350, 280, outline='white')
 c.create_line(335, 65, 350, 65, arrow=LAST, tag='mark')
-step=Button(text='Шаг', command=step)
+step_btn = Button(text='Шаг')
+step_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
 reset=Button(text='Сброс', command=reset)
-step.place(x=400, y=250)
+step_btn.place(x=400, y=250)
 reset.place(x=500, y=250)
 
 
-step.bind=('<Button-1>', step)
 txt = Text(root, width=30, height=10, font="14", bg='yellow')
 txt.pack(side=RIGHT)
 op = askopenfilename(filetypes=[("Text files","*.txt")])
 for i in fileinput.input(op, openhook=fileinput.hook_encoded("utf-8")):
    txt.insert(END, i)
+rows=[line.rstrip('\n') for line in open('test.txt','r',encoding='utf-8')]
 #Counter.display(0,0,c)
 root.mainloop()
