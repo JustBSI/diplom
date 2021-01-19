@@ -54,7 +54,7 @@ class Counter:
     def reset(self):
         self.count=0
 
-    def display(self, x, y, c):
+    def display(self, x, y, c, wc):
         c.create_text((x + wc) / 2, y + 10, text=self.count, anchor=CENTER)
         c.create_rectangle(60, 0, 74, 14)
 
