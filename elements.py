@@ -25,8 +25,8 @@ class Register:
                 self.data[i]=data[i]
 
     def reset(self):
-        for i in self.data:
-            i=0
+        for i in range(len(self.data)):
+            self.data[i]=0
 
     def display(self, x, y, c, wc):
         c.create_text((wc/2)+x, y+10, text=self.name, anchor=CENTER)
@@ -82,3 +82,6 @@ class Adder:
         c.create_text((wc/2)+x,y+10,text=self.name, anchor=CENTER)
         c.create_polygon(x+((wc/2)-50), y+20, x+40+((wc/2)-50), y+20, x+50+((wc/2)-50), y+30, x+60+((wc/2)-50), y+20, x+100+((wc/2)-50), y+20, x+80+((wc/2)-50), y+43, x+20+((wc/2)-50), y+43, outline='black', fill='white')
         print (x)
+
+    def reset(self):
+        i=0

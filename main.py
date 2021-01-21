@@ -92,24 +92,28 @@ print(dict['РгСМ'].data)
 # print(c[1])
 # print(c[2])
 #print(convert("1001"))
+
+def display(c):
+    dict['РгВх'].display(0, 0, c, CANVAS_WIDTH)
+    dict['РгА'].display(-80, 80, c, CANVAS_WIDTH)
+    dict['РгБ'].display(80, 80, c, CANVAS_WIDTH)
+    dict['СМ'].display(0, 160, c, CANVAS_WIDTH)
+    dict['РгСМ'].display(0, 240, c, CANVAS_WIDTH)
+
 c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 c.pack(side=LEFT)
-dict['РгВх'].display(0,0,c,CANVAS_WIDTH)
 c.create_line((CANVAS_WIDTH/2), 45, (CANVAS_WIDTH/2), 60)
 c.create_line((CANVAS_WIDTH/2)-80, 60, (CANVAS_WIDTH/2)+80, 60)
 c.create_line((CANVAS_WIDTH/2)-80, 60, (CANVAS_WIDTH/2)-80, 80, arrow=LAST)
 c.create_line((CANVAS_WIDTH/2)+80, 60, (CANVAS_WIDTH/2)+80, 80, arrow=LAST)
-dict['РгА'].display(-80,80,c,CANVAS_WIDTH)
 c.create_line((CANVAS_WIDTH/2)-80, 125, (CANVAS_WIDTH/2)-80, 150)
 c.create_line((CANVAS_WIDTH/2)-80, 150, (CANVAS_WIDTH/2)-35, 150)
 c.create_line((CANVAS_WIDTH/2)-35, 150, (CANVAS_WIDTH/2)-35, 175, arrow=LAST)
-dict['РгБ'].display(80,80,c,CANVAS_WIDTH)
 c.create_line((CANVAS_WIDTH/2)+80, 125, (CANVAS_WIDTH/2)+80, 150)
 c.create_line((CANVAS_WIDTH/2)+80, 150, (CANVAS_WIDTH/2)+35, 150)
 c.create_line((CANVAS_WIDTH/2)+35, 150, (CANVAS_WIDTH/2)+35, 175, arrow=LAST)
-dict['СМ'].display(0,160,c,CANVAS_WIDTH)
 c.create_line((CANVAS_WIDTH/2), 210, (CANVAS_WIDTH/2), 240, arrow=LAST)
-dict['РгСМ'].display(0,240,c,CANVAS_WIDTH)
+display(c)
 
 class classCounter:
 
@@ -127,17 +131,21 @@ class classCounter:
 
 
 def step(e, rows, i):
-    if i.count<size-1:
+    if i.count<size:
         c.move('mark', 0,18)
         #rows=[line.rstrip('\n') for line in open('test.txt','r',encoding='utf-8')]
         #for row in rows:
         execute(rows[i.count])
         i.inc()
-
+        display(c)
 
 def reset(i):
     c.coords('mark',335, 65, 350, 65)
     i.reset()
+    for key in dict:
+        dict[key].reset()
+        print(key)
+    display(c)
 
 cc=classCounter()
 
