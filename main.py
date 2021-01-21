@@ -2,7 +2,6 @@ import re
 from config import *
 from tkinter.filedialog import *
 import fileinput
-
 from elements import *
 
 root = Tk()
@@ -120,20 +119,25 @@ class classCounter:
     def inc(self):
         self.count += 1
 
+    def reset(self):
+        self.count = 0
+
     def __repr__(self):
         return self.count
 
 
 def step(e, rows, i):
-    c.move('mark', 0,18)
-    #rows=[line.rstrip('\n') for line in open('test.txt','r',encoding='utf-8')]
-    #for row in rows:
-    execute(rows[i.count])
-    i.inc()
+    if i.count<size-1:
+        c.move('mark', 0,18)
+        #rows=[line.rstrip('\n') for line in open('test.txt','r',encoding='utf-8')]
+        #for row in rows:
+        execute(rows[i.count])
+        i.inc()
 
 
-def reset():
+def reset(i):
     c.coords('mark',335, 65, 350, 65)
+    i.reset()
 
 cc=classCounter()
 
@@ -141,9 +145,10 @@ cc=classCounter()
 c.create_line(335, 65, 350, 65, arrow=LAST, tag='mark')
 step_btn = Button(text='Шаг')
 step_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
-reset=Button(text='Сброс', command=reset)
+reset_btn=Button(text='Сброс')
+reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
 step_btn.place(x=400, y=250)
-reset.place(x=500, y=250)
+reset_btn.place(x=500, y=250)
 
 
 txt = Text(root, width=30, height=10, font="14", bg='yellow')
@@ -151,6 +156,7 @@ txt.pack(side=RIGHT)
 op = askopenfilename(filetypes=[("Text files","*.txt")])
 for i in fileinput.input(op, openhook=fileinput.hook_encoded("utf-8")):
    txt.insert(END, i)
+size=sum(1 for line in open('test.txt', 'r'))
 rows=[line.rstrip('\n') for line in open('test.txt','r',encoding='utf-8')]
 #Counter.display(0,0,c)
 root.mainloop()
