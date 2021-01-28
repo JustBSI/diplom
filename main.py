@@ -10,7 +10,8 @@ class Lexer:
     ASSIG, ELEM, ADD, NUM = range(4)
     symbols = {':=': ASSIG, '+': ADD}
 
-    def lex(self,row):
+    @classmethod
+    def parse(self, row):
         str = row.split()
         result = []
         for roow in str:
@@ -18,7 +19,7 @@ class Lexer:
                 result.append(self.ELEM)
             elif roow in self.symbols.keys():
                 result.append(self.symbols[roow])
-            elif len(roow.replace('0','').replace('1',''))==0:
+            elif len(roow.replace('0', '').replace('1', '')) == 0:
                 result.append(self.NUM)
         return result
 
@@ -47,7 +48,7 @@ def convert(str):
 
 
 def execute(row):
-    b = a.lex(row)
+    b = Lexer.parse(row)
     c = row.split()
     if b==[1,0,3]:
         dict[c[0]].set(convert(c[2]))
@@ -103,8 +104,6 @@ for row in f:
         dict[name] = Adder(int(capacity.group(0)), name)
 f.close()
 
-a = Lexer()
-
 print(dict['РгА'].data, dict['РгБ'].data)
 print(dict['РгСМ'].data)
 
@@ -122,6 +121,7 @@ c.create_line((CANVAS_WIDTH/2)+80, 150, (CANVAS_WIDTH/2)+35, 150)
 c.create_line((CANVAS_WIDTH/2)+35, 150, (CANVAS_WIDTH/2)+35, 175, arrow=LAST)
 c.create_line((CANVAS_WIDTH/2), 210, (CANVAS_WIDTH/2), 240, arrow=LAST)
 display(c)
+
 
 cc = classCounter()
 
