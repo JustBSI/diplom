@@ -24,6 +24,58 @@ class Lexer:
         return result
 
 
+class Node:
+
+    # типы узлов
+    START, ACT, END = range(3)
+
+    def __init__(self, type):
+        self.type = type
+
+    @staticmethod
+    def parse(rows):
+
+        current = Node(Node.START)
+        first = current
+        i = 0
+        while i < len(rows):
+            if rows[i][0:4]!="    ":
+                previous = current
+                current = Node(Node.ACT)
+                previous.next = current
+                current.raw     = rows[i][:-1]
+                current.pattern = Lexer.parse(current.raw)
+                i += 1
+            else:
+                inside_rows = []
+                while i<len(rows) and rows[i][0:4]=="    ":
+                    inside_rows.append(rows[i][4:])
+                    i += 1
+                #print(inside_rows)
+                current.inside = Node.parse(inside_rows)
+        previous = current
+        current = Node(Node.END)
+        previous.next = current
+
+        return first
+
+    def display(self, indent=0):
+        if self.type==Node.START:
+            print('| ' * indent+"_Start: ")
+        elif self.type==Node.END:
+            print('| ' * indent+"_End.")
+        else:
+            print('| '*indent+self.raw+' '+str(self.pattern))
+        if hasattr(self, "inside"):
+            self.inside.display(indent+1)
+        if hasattr(self, "next"):
+            self.next.display(indent)
+
+
+
+
+
+
 class classCounter:
 
     def __init__(self):
@@ -56,7 +108,7 @@ def execute(row):
         dict[c[0]].set(dict[c[2]].data)
     elif b==[1,0,1,2,1]:
         dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
-    print("we do exec"+row)
+    #print("we do exec"+row)
 
 
 def display(c):
@@ -80,13 +132,18 @@ def reset(i):
     i.reset()
     for key in dict:
         dict[key].reset()
-        print(key)
+        #print(key)
     display(c)
 
 
 root = Tk()
 
 dict = {}
+
+
+with open('test2.txt','r',encoding='utf-8') as f:
+    start = Node.parse(list(f))
+    start.display()
 
 
 #анализ элементной базы
@@ -104,8 +161,6 @@ for row in f:
         dict[name] = Adder(int(capacity.group(0)), name)
 f.close()
 
-print(dict['РгА'].data, dict['РгБ'].data)
-print(dict['РгСМ'].data)
 
 c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 c.pack(side=LEFT)
