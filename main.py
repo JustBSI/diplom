@@ -7,19 +7,23 @@ from elements import *
 
 class Lexer:
 
-    ASSIG, ELEM, ADD, NUM = range(4)
-    symbols = {':=': ASSIG, '+': ADD}
+    words = ['ASSIG', 'ELEM', 'ADD', 'NUM', 'IF', 'ELSE', 'WHILE', 'EQU', 'MORE', 'LESS', 'NOT_EQU', 'MORE_EQU', 'LESS_EQU']
+    ASSIG, ELEM, ADD, NUM, IF, ELSE, WHILE, EQU, MORE, LESS, NOT_EQU, MORE_EQU, LESS_EQU = range(13)
+    symbols = {':=': ASSIG, '+': ADD, '=': EQU, '>': MORE, '<': LESS, '!=': NOT_EQU, '>=': MORE_EQU, '<=': LESS_EQU}
+    keywords = {'если': IF, 'иначе': ELSE, 'пока': WHILE}
 
     @classmethod
     def parse(self, row):
         str = row.split()
         result = []
-        for roow in str:
-            if roow in dict.keys():
+        for word in str:
+            if   word in dict.keys():
                 result.append(self.ELEM)
-            elif roow in self.symbols.keys():
-                result.append(self.symbols[roow])
-            elif len(roow.replace('0', '').replace('1', '')) == 0:
+            elif word in self.keywords.keys():
+                result.append(self.keywords[word])
+            elif word in self.symbols.keys():
+                result.append(self.symbols[word])
+            elif len(word.replace('0', '').replace('1', '')) == 0:
                 result.append(self.NUM)
         return result
 
@@ -27,24 +31,38 @@ class Lexer:
 class Node:
 
     # типы узлов
-    START, ACT, END = range(3)
+    types = ['START', 'ACT', 'IF', 'ELSE', 'WHILE', 'END']
+    START, ACT, IF, ELSE, WHILE, END = range(6)
 
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, row=None, out=None, type=None):
+        if row:
+            self.raw     = row
+            self.pattern = Lexer.parse(row)
+            if Lexer.IF in self.pattern:
+                self.type = Node.IF
+            elif Lexer.ELSE in self.pattern:
+                self.type = Node.ELSE
+            elif Lexer.WHILE in self.pattern:
+                self.type = Node.WHILE
+            else:
+                self.type = Node.ACT
+        if out:
+            self.out = out
+        if type:
+            self.type = type
 
     @staticmethod
-    def parse(rows):
+    def parse(rows, out=None, end_next=None):
 
-        current = Node(Node.START)
+        current = Node(type=Node.START)
         first = current
         i = 0
+        while ("" in rows):
+            rows.remove("")
         while i < len(rows):
             if rows[i][0:4]!="    ":
-                previous = current
-                current = Node(Node.ACT)
-                previous.next = current
-                current.raw     = rows[i][:-1]
-                current.pattern = Lexer.parse(current.raw)
+                current.next = Node(rows[i][:-1], out)
+                current = current.next
                 i += 1
             else:
                 inside_rows = []
@@ -52,24 +70,58 @@ class Node:
                     inside_rows.append(rows[i][4:])
                     i += 1
                 #print(inside_rows)
-                current.inside = Node.parse(inside_rows)
-        previous = current
-        current = Node(Node.END)
-        previous.next = current
+                current.inside = Node.parse(inside_rows, current)
+                #if current.type == Node.WHILE:
+                #    if i<len(rows):
+                #        current.next = Node(rows[i][:-1], out)
+                #        current.inside = Node.parse(inside_rows, current.next, current)
+                #        current = current.next
+                #        i += 1
+                #elif current.type == Node.IF:
+                #    if i<len(rows):
+                #        current.next = Node(rows[i][:-1], out)
+                #        if Lexer.ELSE in current.next.pattern:
+                #            i += 1
+                #            inside_rows_2 = []
+                #            while i < len(rows) and rows[i][0:4] == "    ":
+                #                inside_rows_2.append(rows[i][4:])
+                #                i += 1
 
-        return first
+        #if end_next:
+        #    current.next = end_next
+        #else:
+        #    previous = current
+        #    current = Node(type=Node.END)
+        #    previous.next = current
+
+        return first.next
 
     def display(self, indent=0):
-        if self.type==Node.START:
-            print('| ' * indent+"_Start: ")
-        elif self.type==Node.END:
-            print('| ' * indent+"_End.")
-        else:
-            print('| '*indent+self.raw+' '+str(self.pattern))
+        #if self.type==Node.START:
+            #print('| ' * indent+"_Start: ")
+        #elif self.type==Node.END:
+            #print('| ' * indent+"_End.")
+        #else:
+        try:
+            print('| '*indent+Node.types[self.type]+' '+self.raw+' '+str(self.pattern)+' '+str(hasattr(self, "next")))
+        except Exception:
+            print('strange node')
         if hasattr(self, "inside"):
             self.inside.display(indent+1)
         if hasattr(self, "next"):
             self.next.display(indent)
+
+    def execute(self):
+        c = self.raw.split()
+        if   self.pattern == [1, 0, 3]:
+            dict[c[0]].set(convert(c[2]))
+        elif self.pattern == [1, 0, 1]:
+            dict[c[0]].set(dict[c[2]].data)
+        elif self.pattern == [1, 0, 1, 2, 1]:
+            dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
+
+    def condition(self):
+        return True
 
 
 
