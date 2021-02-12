@@ -201,34 +201,34 @@ with open('test2.txt','r',encoding='utf-8') as f:
 #анализ элементной базы
 f = open('elements.txt','r',encoding='utf-8')
 for row in f:
-    if 'Регистр' in row:
-        str        = re.split(' ', row)
-        name       = re.split('\(', str[1])[0]
+    if   'Регистр'  in row:
+        str        = re.split (' ', row)
+        name       = re.split ('\(', str[1])[0]
         capacity   = re.search('\d', (re.split('\(', str[1])[1]))
         dict[name] = Register(int(capacity.group(0)), name)
     elif 'Сумматор' in row:
-        str        = re.split(' ', row)
-        name       = (re.split('\(', str[1])[0])
-        capacity   = (re.search('\d', (re.split('\(', str[1])[1])))
+        str        = re.split (' ', row)
+        name       = re.split ('\(', str[1])[0]
+        capacity   = re.search('\d', (re.split('\(', str[1])[1]))
         dict[name] = Adder(int(capacity.group(0)), name)
 f.close()
 
 
 c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 c.pack(side=LEFT)
-c.create_text((CANVAS_WIDTH/2), 15, text='Шина', anchor=CENTER)
-c.create_line((CANVAS_WIDTH/2), 30, (CANVAS_WIDTH/2), 55, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2), 105, (CANVAS_WIDTH/2), 120)
-c.create_line((CANVAS_WIDTH/2)-80, 120, (CANVAS_WIDTH/2)+80, 120)
+c.create_text((CANVAS_WIDTH/2)   ,  15, text='Шина', anchor=CENTER)
+c.create_line((CANVAS_WIDTH/2)   ,  30, (CANVAS_WIDTH/2)   ,  55, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2)   , 105, (CANVAS_WIDTH/2)   , 120            )
+c.create_line((CANVAS_WIDTH/2)-80, 120, (CANVAS_WIDTH/2)+80, 120            )
 c.create_line((CANVAS_WIDTH/2)-80, 120, (CANVAS_WIDTH/2)-80, 140, arrow=LAST)
 c.create_line((CANVAS_WIDTH/2)+80, 120, (CANVAS_WIDTH/2)+80, 140, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2)-80, 185, (CANVAS_WIDTH/2)-80, 210)
-c.create_line((CANVAS_WIDTH/2)-80, 210, (CANVAS_WIDTH/2)-35, 210)
+c.create_line((CANVAS_WIDTH/2)-80, 185, (CANVAS_WIDTH/2)-80, 210            )
+c.create_line((CANVAS_WIDTH/2)-80, 210, (CANVAS_WIDTH/2)-35, 210            )
 c.create_line((CANVAS_WIDTH/2)-35, 210, (CANVAS_WIDTH/2)-35, 235, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2)+80, 185, (CANVAS_WIDTH/2)+80, 210)
-c.create_line((CANVAS_WIDTH/2)+80, 210, (CANVAS_WIDTH/2)+35, 210)
+c.create_line((CANVAS_WIDTH/2)+80, 185, (CANVAS_WIDTH/2)+80, 210            )
+c.create_line((CANVAS_WIDTH/2)+80, 210, (CANVAS_WIDTH/2)+35, 210            )
 c.create_line((CANVAS_WIDTH/2)+35, 210, (CANVAS_WIDTH/2)+35, 235, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2), 270, (CANVAS_WIDTH/2), 300, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2)   , 270, (CANVAS_WIDTH/2)   , 300, arrow=LAST)
 display(c)
 
 
@@ -236,10 +236,10 @@ cc = classCounter()
 
 
 c.create_line(335, 65, 350, 65, arrow=LAST, tag='mark')
-step_entry_btn_icon=PhotoImage(file='2.png')
-step_detour_btn_icon=PhotoImage(file='3.png')
-step_exit_btn_icon=PhotoImage(file='1.png')
-reset_btn_icon=PhotoImage(file='4.png')
+step_entry_btn_icon  = PhotoImage(file='media/2.png')
+step_detour_btn_icon = PhotoImage(file='media/3.png')
+step_exit_btn_icon   = PhotoImage(file='media/1.png')
+reset_btn_icon       = PhotoImage(file='media/4.png')
 
 step_entry_btn = Button(width="20",height="20", image=step_entry_btn_icon)
 step_detour_btn = Button(width="20",height="20", image=step_detour_btn_icon)
@@ -249,10 +249,10 @@ reset_btn = Button(width="20",height="20", image=reset_btn_icon)
 step_entry_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
 reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
 
-step_entry_btn.place(x=370, y=310)
+step_entry_btn .place(x=370, y=310)
 step_detour_btn.place(x=410, y=310)
-step_exit_btn.place(x=450, y=310)
-reset_btn.place(x=560, y=310)
+step_exit_btn  .place(x=450, y=310)
+reset_btn      .place(x=560, y=310)
 
 txt = Text(root, width=30, height=10, font="14", bg='yellow')
 txt.pack(side=RIGHT)
