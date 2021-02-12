@@ -119,12 +119,35 @@ class Node:
             dict[c[0]].set(dict[c[2]].data)
         elif self.pattern == [1, 0, 1, 2, 1]:
             dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
+        elif self.pattern[0] == Lexer.IF:
+            return self.condition()
+        elif self.pattern[0] == Lexer.WHILE:
+            return self.condition()
 
     def condition(self):
-        return True
-
-
-
+        c = self.raw.split()
+        if    self.pattern[1] == Lexer.ELEM:
+            op1 = dict[c[1]].count
+        elif  self.pattern[1] == Lexer.NUM:
+            op1 = int(c[1])
+        if    self.pattern[3] == Lexer.ELEM:
+            op2 = dict[c[3]].count
+        elif  self.pattern[3] == Lexer.NUM:
+            op2 = int(c[3])
+        if   c[2] == Lexer.EQU:
+            return op1 == op2
+        elif c[2] == Lexer.MORE:
+            return op1  > op2
+        elif c[2] == Lexer.LESS:
+            return op1  < op2
+        elif c[2] == Lexer.NOT_EQU:
+            return op1 != op2
+        elif c[2] == Lexer.MORE_EQU:
+            return op1 >= op2
+        elif c[2] == Lexer.LESS_EQU:
+            return op1 <= op2
+        else:
+            return False
 
 
 
