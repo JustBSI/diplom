@@ -164,11 +164,11 @@ def execute(row):
 
 
 def display(c):
-    dict['РгВх'].display(0, 0, c, CANVAS_WIDTH)
-    dict['РгА'].display(-80, 80, c, CANVAS_WIDTH)
-    dict['РгБ'].display(80, 80, c, CANVAS_WIDTH)
-    dict['СМ'].display(0, 160, c, CANVAS_WIDTH)
-    dict['РгСМ'].display(0, 240, c, CANVAS_WIDTH)
+    dict['РгВх'].display(0, 60, c, CANVAS_WIDTH)
+    dict['РгА'].display(-80, 140, c, CANVAS_WIDTH)
+    dict['РгБ'].display(80, 140, c, CANVAS_WIDTH)
+    dict['СМ'].display(0, 220, c, CANVAS_WIDTH)
+    dict['РгСМ'].display(0, 300, c, CANVAS_WIDTH)
 
 
 def step(e, rows, i):
@@ -216,17 +216,19 @@ f.close()
 
 c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 c.pack(side=LEFT)
-c.create_line((CANVAS_WIDTH/2), 45, (CANVAS_WIDTH/2), 60)
-c.create_line((CANVAS_WIDTH/2)-80, 60, (CANVAS_WIDTH/2)+80, 60)
-c.create_line((CANVAS_WIDTH/2)-80, 60, (CANVAS_WIDTH/2)-80, 80, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2)+80, 60, (CANVAS_WIDTH/2)+80, 80, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2)-80, 125, (CANVAS_WIDTH/2)-80, 150)
-c.create_line((CANVAS_WIDTH/2)-80, 150, (CANVAS_WIDTH/2)-35, 150)
-c.create_line((CANVAS_WIDTH/2)-35, 150, (CANVAS_WIDTH/2)-35, 175, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2)+80, 125, (CANVAS_WIDTH/2)+80, 150)
-c.create_line((CANVAS_WIDTH/2)+80, 150, (CANVAS_WIDTH/2)+35, 150)
-c.create_line((CANVAS_WIDTH/2)+35, 150, (CANVAS_WIDTH/2)+35, 175, arrow=LAST)
-c.create_line((CANVAS_WIDTH/2), 210, (CANVAS_WIDTH/2), 240, arrow=LAST)
+c.create_text((CANVAS_WIDTH/2), 15, text='Шина', anchor=CENTER)
+c.create_line((CANVAS_WIDTH/2), 30, (CANVAS_WIDTH/2), 55, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2), 105, (CANVAS_WIDTH/2), 120)
+c.create_line((CANVAS_WIDTH/2)-80, 120, (CANVAS_WIDTH/2)+80, 120)
+c.create_line((CANVAS_WIDTH/2)-80, 120, (CANVAS_WIDTH/2)-80, 140, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2)+80, 120, (CANVAS_WIDTH/2)+80, 140, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2)-80, 185, (CANVAS_WIDTH/2)-80, 210)
+c.create_line((CANVAS_WIDTH/2)-80, 210, (CANVAS_WIDTH/2)-35, 210)
+c.create_line((CANVAS_WIDTH/2)-35, 210, (CANVAS_WIDTH/2)-35, 235, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2)+80, 185, (CANVAS_WIDTH/2)+80, 210)
+c.create_line((CANVAS_WIDTH/2)+80, 210, (CANVAS_WIDTH/2)+35, 210)
+c.create_line((CANVAS_WIDTH/2)+35, 210, (CANVAS_WIDTH/2)+35, 235, arrow=LAST)
+c.create_line((CANVAS_WIDTH/2), 270, (CANVAS_WIDTH/2), 300, arrow=LAST)
 display(c)
 
 
@@ -234,19 +236,57 @@ cc = classCounter()
 
 
 c.create_line(335, 65, 350, 65, arrow=LAST, tag='mark')
-step_btn = Button(text='Шаг')
-step_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
-reset_btn = Button(text='Сброс')
-reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
-step_btn.place(x=400, y=250)
-reset_btn.place(x=500, y=250)
+step_entry_btn_icon=PhotoImage(file='2.png')
+step_detour_btn_icon=PhotoImage(file='3.png')
+step_exit_btn_icon=PhotoImage(file='1.png')
+reset_btn_icon=PhotoImage(file='4.png')
 
+step_entry_btn = Button(width="20",height="20", image=step_entry_btn_icon)
+step_detour_btn = Button(width="20",height="20", image=step_detour_btn_icon)
+step_exit_btn = Button(width="20",height="20", image=step_exit_btn_icon)
+reset_btn = Button(width="20",height="20", image=reset_btn_icon)
+
+step_entry_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
+reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
+
+step_entry_btn.place(x=370, y=310)
+step_detour_btn.place(x=410, y=310)
+step_exit_btn.place(x=450, y=310)
+reset_btn.place(x=560, y=310)
 
 txt = Text(root, width=30, height=10, font="14", bg='yellow')
 txt.pack(side=RIGHT)
-op = askopenfilename(filetypes=[("Text files", "*.txt")])
-for i in fileinput.input(op, openhook=fileinput.hook_encoded("utf-8")):
-   txt.insert(END, i)
-size = sum(1 for line in open('test.txt', 'r'))
-rows = [line.rstrip('\n') for line in open('test.txt', 'r', encoding='utf-8')]
+
+def open_file():
+    txt.delete(1.0, END)
+    file=askopenfilename(filetypes=[("Text files", "*.txt")])
+    for i in fileinput.input(file, openhook=fileinput.hook_encoded("utf-8")):
+        txt.insert(END, i)
+    size = sum(1 for line in open(file, 'r'))
+    rows = [line.rstrip('\n') for line in open(file, 'r', encoding='utf-8')]
+    print(file)
+
+
+def save_as_file():
+    file=asksaveasfile(mode='w', filetypes=[("Text files", "*.txt")], defaultextension=".txt")
+    if file is None:  # asksaveasfile return `None` if dialog closed with "cancel".
+        return
+    print(file)
+    text2save = str(txt.get(1.0, END)) # starts from `1.0`, not `0.0`
+    file.write(text2save)
+    file.close() # `()` was missing.
+
+
+mainmenu = Menu(root)
+root.config(menu=mainmenu)
+filemenu = Menu(mainmenu, tearoff=0)
+filemenu.add_command(label="Открыть...", command=open_file)
+#filemenu.add_command(label="Сохранить...", command=save_file)
+filemenu.add_command(label="Сохранить как...", command=save_as_file)
+mainmenu.add_cascade(label="Файл", menu=filemenu)
+
+
+
+
+
 root.mainloop()
