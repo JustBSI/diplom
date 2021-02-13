@@ -31,7 +31,7 @@ class Lexer:
 class Node:
 
     # типы узлов
-    types = ['START', 'ACT', 'IF', 'ELSE', 'WHILE', 'END']
+    types = ['ACT', 'IF', 'ELSE', 'WHILE']
     ACT, IF, ELSE, WHILE = range(4)
 
     def __init__(self, row=None, out=None, type=None):
@@ -76,46 +76,67 @@ class Node:
     def step(self):
         if self.type == Node.ACT:
             self.execute()
-            if hasattr(self, "next"):
-                return self.next
-            else:
-                return None
+            return self.find_next()
         elif self.type == Node.IF:
             if self.execute():
                 self.inside.execute_all()
                 if hasattr(self, "next"):
                     if self.next.type == Node.ELSE:
-                        if hasattr(self.next, "next"):
-                            return self.next.next
-                        else:
-                            return None
+                        return self.next.find_next()
                     else:
                         return self.next
                 else:
-                    return None
+                    return self.find_out()
             else:
                 if hasattr(self, "next"):
                     if self.next.type == Node.ELSE:
                         self.next.inside.execute_all()
-                        if hasattr(self.next, "next"):
-                            return self.next.next
-                        else:
-                            return None
+                        return self.next.find_next()
                     else:
                         return self.next
                 else:
-                    return None
+                    return self.find_out()
         elif self.type == Node.WHILE:
             while self.execute():
                 self.inside.execute_all()
-            if hasattr(self, "next"):
-                return self.next
-            else:
-                return None
+            return self.find_next()
         else:
             print("Ошибка: недопустимый тип узла -- " + Node.types[self.type])
             return None
 
+
+    def find_next(self):
+        if hasattr(self, "next"):
+            return self.next
+        else:
+            return self.find_out()
+
+
+    def find_out(self):
+        if hasattr(self, "out"):
+            if self.out.type == Node.WHILE:
+                return self.out
+            elif self.out.type == Node.IF:
+                if hasattr(self.out, "next"):
+                    if self.out.next.type == Node.ELSE:
+                        if hasattr(self.out.next, "next"):
+                            return self.out.next.next
+                        else:
+                            return self.out.next.find_out()
+                    else:
+                        return self.out.next
+                else:
+                    return self.out.find_out()
+            elif self.out.type == Node.ELSE:
+                if hasattr(self.out, "next"):
+                    return self.out.next
+                else:
+                    return self.out.find_out()
+            else:
+                print("Ошибка: недопустимый тип узла -- " + Node.types[self.out.type])
+                return None
+        else:
+            return None
 
 
     def display(self, indent=0):
