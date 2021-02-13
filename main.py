@@ -32,7 +32,7 @@ class Node:
 
     # типы узлов
     types = ['START', 'ACT', 'IF', 'ELSE', 'WHILE', 'END']
-    START, ACT, IF, ELSE, WHILE, END = range(6)
+    ACT, IF, ELSE, WHILE = range(4)
 
     def __init__(self, row=None, out=None, type=None):
         if row:
@@ -52,9 +52,9 @@ class Node:
             self.type = type
 
     @staticmethod
-    def parse(rows, out=None, end_next=None):
+    def parse(rows, out=None):
 
-        current = Node(type=Node.START)
+        current = Node()
         first = current
         i = 0
         while ("" in rows):
@@ -69,49 +69,56 @@ class Node:
                 while i<len(rows) and rows[i][0:4]=="    ":
                     inside_rows.append(rows[i][4:])
                     i += 1
-                #print(inside_rows)
                 current.inside = Node.parse(inside_rows, current)
-                #if current.type == Node.WHILE:
-                #    if i<len(rows):
-                #        current.next = Node(rows[i][:-1], out)
-                #        current.inside = Node.parse(inside_rows, current.next, current)
-                #        current = current.next
-                #        i += 1
-                #elif current.type == Node.IF:
-                #    if i<len(rows):
-                #        current.next = Node(rows[i][:-1], out)
-                #        if Lexer.ELSE in current.next.pattern:
-                #            i += 1
-                #            inside_rows_2 = []
-                #            while i < len(rows) and rows[i][0:4] == "    ":
-                #                inside_rows_2.append(rows[i][4:])
-                #                i += 1
-
-        #if end_next:
-        #    current.next = end_next
-        #else:
-        #    previous = current
-        #    current = Node(type=Node.END)
-        #    previous.next = current
 
         return first.next
 
-    @staticmethod
-    def step(current):
-        if current.type == Node.ACT:
-            current.execute()
-            return current.next
-        #elif current.type == Node.ACT:
-            #if(current.execute()):
+    def step(self):
+        if self.type == Node.ACT:
+            self.execute()
+            if hasattr(self, "next"):
+                return self.next
+            else:
+                return None
+        elif self.type == Node.IF:
+            if self.execute():
+                self.inside.execute_all()
+                if hasattr(self, "next"):
+                    if self.next.type == Node.ELSE:
+                        if hasattr(self.next, "next"):
+                            return self.next.next
+                        else:
+                            return None
+                    else:
+                        return self.next
+                else:
+                    return None
+            else:
+                if hasattr(self, "next"):
+                    if self.next.type == Node.ELSE:
+                        self.next.inside.execute_all()
+                        if hasattr(self.next, "next"):
+                            return self.next.next
+                        else:
+                            return None
+                    else:
+                        return self.next
+                else:
+                    return None
+        elif self.type == Node.WHILE:
+            while self.execute():
+                self.inside.execute_all()
+            if hasattr(self, "next"):
+                return self.next
+            else:
+                return None
+        else:
+            print("Ошибка: недопустимый тип узла -- " + Node.types[self.type])
+            return None
 
 
 
     def display(self, indent=0):
-        #if self.type==Node.START:
-            #print('| ' * indent+"_Start: ")
-        #elif self.type==Node.END:
-            #print('| ' * indent+"_End.")
-        #else:
         try:
             print('| '*indent+Node.types[self.type]+' '+self.raw+' '+str(self.pattern)+' '+str(hasattr(self, "next")))
         except Exception:
