@@ -128,6 +128,19 @@ class Node:
             print("Ошибка: недопустимый тип узла -- " + Node.types[self.type])
             return None
 
+
+    def step_outside(self):
+        last = self.execute_all()
+        current = last.find_out()
+        if current.type==Node.WHILE and last.out is current:
+            while current.execute():
+                current.inside.execute_all()
+            return current.find_next()
+        else:
+            return current
+
+
+
     def find_next(self):
         if hasattr(self, "next"):
             return self.next
@@ -221,6 +234,7 @@ class Node:
                 current.inside.execute_all()
         else:
             print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
+        return current
 
 
     def condition(self):
