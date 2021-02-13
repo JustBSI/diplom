@@ -104,6 +104,29 @@ class Node:
             print("Ошибка: недопустимый тип узла -- " + Node.types[self.type])
             return None
 
+    def step_inside(self):
+        if self.type == Node.ACT:
+            self.execute()
+            return self.find_next()
+        elif self.type == Node.IF:
+            if self.execute():
+                return self.inside
+            else:
+                if hasattr(self, "next"):
+                    if self.next.type == Node.ELSE:
+                        return self.next.inside
+                    else:
+                        return self.next
+                else:
+                    return self.find_out()
+        elif self.type == Node.WHILE:
+            if self.execute():
+                return self.inside
+            else:
+                return self.find_next()
+        else:
+            print("Ошибка: недопустимый тип узла -- " + Node.types[self.type])
+            return None
 
     def find_next(self):
         if hasattr(self, "next"):
