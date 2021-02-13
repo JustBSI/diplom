@@ -96,6 +96,16 @@ class Node:
 
         return first.next
 
+    @staticmethod
+    def step(current):
+        if current.type == Node.ACT:
+            current.execute()
+            return current.next
+        #elif current.type == Node.ACT:
+            #if(current.execute()):
+
+
+
     def display(self, indent=0):
         #if self.type==Node.START:
             #print('| ' * indent+"_Start: ")
@@ -123,6 +133,44 @@ class Node:
             return self.condition()
         elif self.pattern[0] == Lexer.WHILE:
             return self.condition()
+
+    def execute_all(self):
+        current = self
+        while hasattr(current, "next"):
+            if current.type == Node.ACT:
+                current.execute()
+                current = current.next
+            elif current.type == Node.IF:
+                if current.execute():
+                    current.inside.execute_all()
+                    if current.next.type == Node.ELSE:
+                        if hasattr(current.next, "next"):
+                            current = current.next.next
+                    else:
+                        current = current.next
+                else:
+                    current = current.next
+                    if current.type == Node.ELSE:
+                        current.inside.execute_all()
+                        if hasattr(current, "next"):
+                            current = current.next
+            elif current.type == Node.WHILE:
+                while current.execute():
+                    current.inside.execute_all()
+                current = current.next
+            else:
+                print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
+        if current.type == Node.ACT:
+            current.execute()
+        elif current.type == Node.IF:
+            if current.execute():
+                current.inside.execute_all()
+        elif current.type == Node.WHILE:
+            while current.execute():
+                current.inside.execute_all()
+        else:
+            print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
+
 
     def condition(self):
         c = self.raw.split()
