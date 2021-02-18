@@ -42,6 +42,21 @@ class Register:
             else:
                 c.create_oval(xa, 25+y, xb, 35+y, fill='red')
 
+    def display_2(self, x, y, c, wc):
+        c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
+        #c.create_rectangle(x+70, y+10, (wc/2)+x+(125/2), y+30, fill='white')
+        xa = 0+(wc/2)+x-(145/2)
+        xb = 10+(wc/2)+x-(145/2)
+        dx = 15
+        print(self.data)
+        for i in self.data:
+            xa+=dx
+            xb+=dx
+            if i == 0:
+                c.create_oval(xa, 15+y, xb, 25+y, fill='white', tag='reg')
+            else:
+                c.create_oval(xa, 15+y, xb, 25+y, fill='red', tag='reg')
+
 
 class Counter:
 
@@ -82,6 +97,9 @@ class Adder:
         c.create_text((wc/2)+x,y+10,text=self.name, anchor=CENTER)
         c.create_polygon(x+((wc/2)-50), y+20, x+40+((wc/2)-50), y+20, x+50+((wc/2)-50), y+30, x+60+((wc/2)-50), y+20, x+100+((wc/2)-50), y+20, x+80+((wc/2)-50), y+43, x+20+((wc/2)-50), y+43, outline='black', fill='white')
         #print (x)
+
+    def display_2(self, x, y, c, wc):
+        print(" ")
 
     def reset(self):
         i=0
