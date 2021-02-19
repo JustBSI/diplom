@@ -28,6 +28,7 @@ class Register:
         for i in range(len(self.data)):
             self.data[i]=0
 
+    #рисование структурки
     def display(self, x, y, c, wc):
         c.create_text((wc/2)+x, y+10, text=self.name, anchor=CENTER)
         c.create_rectangle((wc/2)+x-(125/2), y+20, (wc/2)+x+(125/2), y+40, fill='white')
@@ -42,6 +43,7 @@ class Register:
             else:
                 c.create_oval(xa, 25+y, xb, 35+y, fill='red')
 
+    #рисование упрощённой схемы
     def display_2(self, x, y, c, wc):
         c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
         #c.create_rectangle(x+70, y+10, (wc/2)+x+(125/2), y+30, fill='white')
@@ -93,6 +95,7 @@ class Adder:
                     overflow=overflow^carry
             return(c,carry,overflow)
 
+    #рисование элемента на структурке
     def display(self, x, y, c, wc):
         c.create_text((wc/2)+x,y+10,text=self.name, anchor=CENTER)
         c.create_polygon(x+((wc/2)-50), y+20, x+40+((wc/2)-50), y+20, x+50+((wc/2)-50), y+30, x+60+((wc/2)-50), y+20, x+100+((wc/2)-50), y+20, x+80+((wc/2)-50), y+43, x+20+((wc/2)-50), y+43, outline='black', fill='white')

@@ -185,6 +185,7 @@ class Node:
         if hasattr(self, "next"):
             self.next.display(indent)
 
+    # исполнение
     def execute(self):
         c = self.raw.split()
         if   self.pattern == [1, 0, 3]:
@@ -262,8 +263,7 @@ class Node:
         else:
             return False
 
-
-
+#счетчик
 class classCounter:
 
     def __init__(self):
@@ -278,7 +278,7 @@ class classCounter:
     def __repr__(self):
         return self.count
 
-
+#конвертер
 def convert(str):
     list=[0]*len(str)
     for i, l in enumerate(str):
@@ -286,7 +286,7 @@ def convert(str):
             list[i]=1
     return list
 
-
+#исполнение строки
 def execute(row):
     b = Lexer.parse(row)
     c = row.split()
@@ -298,7 +298,6 @@ def execute(row):
         dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
     #print("we do exec"+row)
 
-
 # def display(c):
 #     dict['РгВх'].display(0, 60, c, CANVAS_WIDTH)
 #     dict['РгА'].display(-80, 140, c, CANVAS_WIDTH)
@@ -306,7 +305,7 @@ def execute(row):
 #     dict['СМ'].display(0, 220, c, CANVAS_WIDTH)
 #     dict['РгСМ'].display(0, 300, c, CANVAS_WIDTH)
 
-
+#шаг
 def step(e, rows, i):
     if i.count<size:
         #c.move('mark', 0,18)
@@ -315,7 +314,7 @@ def step(e, rows, i):
         drawer_default_scheme()
         #display(c)
 
-
+#сброс
 def reset(i):
     c.coords('mark',335, 65, 350, 65)
     i.reset()
@@ -324,17 +323,16 @@ def reset(i):
         #print(key)
     display(c)
 
-
+#окно
 root = Tk()
-root.geometry('700x450')
+root.geometry('700x450') #размер окна
 
-dict = {}
+dict = {} #словарь с элементами
 
 
 with open('test2.txt','r',encoding='utf-8') as f:
     start = Node.parse(list(f))
     start.display()
-
 
 #анализ элементной базы
 f = open('elements.txt','r',encoding='utf-8')
@@ -351,10 +349,11 @@ for row in f:
         dict[name] = Adder(int(capacity[0]), name)
 f.close()
 
-
+#канвас, в котором рисуются схемы
 c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 c.pack(side=LEFT)
 
+#рисование схемы со стрелочками и блоками
 # c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 # c.pack(side=LEFT)
 # c.create_text((CANVAS_WIDTH/2)   ,  15, text='Шина', anchor=CENTER)
@@ -374,8 +373,9 @@ c.pack(side=LEFT)
 # display(c)
 
 
-cc = classCounter()
+cc = classCounter() #счётчик
 
+#открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():
     global rows
     global size
@@ -388,6 +388,7 @@ def open_file():
     print(file)
     drawer_default_scheme()
 
+#рисование схемы с очисткой канваса
 def drawer_default_scheme():
     c.delete('reg')
     j=0
@@ -395,6 +396,7 @@ def drawer_default_scheme():
         dict[i].display_2(0, j, c, CANVAS_WIDTH)
         j+=20
 
+#сохранить как
 def save_as_file():
     file=asksaveasfile(mode='w', filetypes=[("Text files", "*.txt")], defaultextension=".txt")
     if file is None:  # asksaveasfile return `None` if dialog closed with "cancel".
@@ -404,44 +406,46 @@ def save_as_file():
     file.write(text2save)
     file.close()
 
-
+#верхнее меню
 mainmenu = Menu(root)
 root.config(menu=mainmenu)
 filemenu = Menu(mainmenu, tearoff=0)
+schememenu = Menu(mainmenu, tearoff=0)
+mainmenu.add_cascade(label="Файл", menu=filemenu)
 filemenu.add_command(label="Открыть...", command=open_file)
 #filemenu.add_command(label="Сохранить...", command=save_file)
 filemenu.add_command(label="Сохранить как...", command=save_as_file)
-mainmenu.add_cascade(label="Файл", menu=filemenu)
+mainmenu.add_cascade(label="Схема", menu=schememenu)
+# mainmenu.add_command(label="1", command=draw1)
+# mainmenu.add_command(label="1", command=draw2)
 
+#картинки кнопок
 step_entry_btn_icon  = PhotoImage(file='media/2.png')
 step_detour_btn_icon = PhotoImage(file='media/3.png')
 step_exit_btn_icon   = PhotoImage(file='media/1.png')
 reset_btn_icon       = PhotoImage(file='media/4.png')
 
+#размеры кнопок
 step_entry_btn  = Button(width="20",height="20", image=step_entry_btn_icon)
 step_detour_btn = Button(width="20",height="20", image=step_detour_btn_icon)
 step_exit_btn   = Button(width="20",height="20", image=step_exit_btn_icon)
 reset_btn       = Button(width="20",height="20", image=reset_btn_icon)
 
+#функционал кнопок
 step_entry_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
 reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
 
+#размещение кнопок
 step_entry_btn .place(x=400, y=7)
 step_detour_btn.place(x=440, y=7)
 step_exit_btn  .place(x=480, y=7)
 reset_btn      .place(x=600, y=7)
 
+#конфиги текстового поля
 txt = Text(root, width=35, height=19, font="14", bg='yellow')
 txt.pack(side=RIGHT)
 scroll = Scrollbar(command=txt.yview)
 scroll.pack(side=RIGHT, fill=Y)
-
 txt.config(yscrollcommand=scroll.set)
-
-
-
-
-
-
 
 root.mainloop()
