@@ -3,8 +3,10 @@ from config import *
 from tkinter.filedialog import *
 import fileinput
 from elements import *
+import tkinter as tk
 
 
+dict = {} #словарь с элементами
 class Lexer:
 
     words = ['ASSIG', 'ELEM', 'ADD', 'NUM', 'IF', 'ELSE', 'WHILE', 'EQU', 'MORE', 'LESS', 'NOT_EQU', 'MORE_EQU', 'LESS_EQU']
@@ -312,7 +314,8 @@ def step(e, rows, i):
         #c.move('mark', 0,18)
         execute(rows[i.count])
         i.inc()
-        drawer_default_scheme()
+        scheme_simple_display()
+        #drawer_default_scheme()
         #display(c)
 
 #сброс
@@ -323,14 +326,29 @@ def reset(i):
     for key in dict:
         dict[key].reset()
         #print(key)
-    drawer_default_scheme()
+    #drawer_default_scheme()
     #display(c)
 
-#окно
 root = Tk()
 root.geometry('700x450') #размер окна
+#вызов окна упрощённой схемы
+def scheme_simple():
+    scheme = tk.Toplevel(root)
+    return scheme
+c = Canvas(scheme_simple(), width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
+c.delete('reg')
 
-dict = {} #словарь с элементами
+def scheme_simple_display():
+    c.pack(side=LEFT)
+    j = 0
+    for i in dict:
+        dict[i].display_2(0, j, c, CANVAS_WIDTH)
+        j += 20
+#scheme_simple_display(scheme_simple())
+#окно
+
+
+
 
 
 with open('test2.txt','r',encoding='utf-8') as f:
@@ -351,10 +369,6 @@ for row in f:
         capacity   = re.findall(r'\d+', str[1])
         dict[name] = Adder(int(capacity[0]), name)
 f.close()
-
-#канвас, в котором рисуются схемы
-c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
-c.pack(side=LEFT)
 
 #рисование схемы со стрелочками и блоками
 # c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
@@ -390,15 +404,11 @@ def open_file():
     #rows = [line.rstrip('\n') for line in open(file, 'r', encoding='utf-8')]
     rows = txt.get("1.0", END).splitlines()
     print(file)
-    drawer_default_scheme()
+    #drawer_default_scheme()
 
 #рисование схемы с очисткой канваса
-def drawer_default_scheme():
-    c.delete('reg')
-    j=0
-    for i in dict:
-        dict[i].display_2(0, j, c, CANVAS_WIDTH)
-        j+=20
+#def drawer_default_scheme():
+
 
 #сохранить как
 def save_as_file():
@@ -420,8 +430,8 @@ filemenu.add_command(label="Открыть...", command=open_file)
 #filemenu.add_command(label="Сохранить...", command=save_file)
 filemenu.add_command(label="Сохранить как...", command=save_as_file)
 mainmenu.add_cascade(label="Схема", menu=schememenu)
-# mainmenu.add_command(label="1", command=draw1)
-# mainmenu.add_command(label="1", command=draw2)
+schememenu.add_command(label="Упрощённая схема", command=scheme_simple)
+# mainmenu.add_command(label="Структурная схема", command=draw2)
 
 #картинки кнопок
 step_entry_btn_icon  = PhotoImage(file='media/2.png')
