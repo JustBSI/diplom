@@ -307,6 +307,7 @@ def execute(row):
 
 #шаг
 def step(e, rows, i):
+    rows = txt.get("1.0", END).splitlines()
     if i.count<size:
         #c.move('mark', 0,18)
         execute(rows[i.count])
@@ -316,12 +317,14 @@ def step(e, rows, i):
 
 #сброс
 def reset(i):
+    #rows = txt.get("1.0", END).splitlines()
     c.coords('mark',335, 65, 350, 65)
     i.reset()
     for key in dict:
         dict[key].reset()
         #print(key)
-    display(c)
+    drawer_default_scheme()
+    #display(c)
 
 #окно
 root = Tk()
@@ -384,7 +387,8 @@ def open_file():
     for i in fileinput.input(file, openhook=fileinput.hook_encoded("utf-8")):
         txt.insert(END, i)
     size = sum(1 for line in open(file, 'r'))
-    rows = [line.rstrip('\n') for line in open(file, 'r', encoding='utf-8')]
+    #rows = [line.rstrip('\n') for line in open(file, 'r', encoding='utf-8')]
+    rows = txt.get("1.0", END).splitlines()
     print(file)
     drawer_default_scheme()
 
@@ -442,7 +446,7 @@ step_exit_btn  .place(x=480, y=7)
 reset_btn      .place(x=600, y=7)
 
 #конфиги текстового поля
-txt = Text(root, width=35, height=19, font="14", bg='yellow')
+txt = Text(root, width=35, height=19, font="14", bg='white')
 txt.pack(side=RIGHT)
 scroll = Scrollbar(command=txt.yview)
 scroll.pack(side=RIGHT, fill=Y)
