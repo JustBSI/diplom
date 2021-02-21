@@ -314,14 +314,14 @@ def step(e, rows, i):
         #c.move('mark', 0,18)
         execute(rows[i.count])
         i.inc()
-        scheme_simple_display()
+        scheme_simple_display(scheme_canvas)
         #drawer_default_scheme()
         #display(c)
 
 #сброс
 def reset(i):
     #rows = txt.get("1.0", END).splitlines()
-    c.coords('mark',335, 65, 350, 65)
+    #c.coords('mark',335, 65, 350, 65)
     i.reset()
     for key in dict:
         dict[key].reset()
@@ -330,15 +330,16 @@ def reset(i):
     #display(c)
 
 root = Tk()
-root.geometry('700x450') #размер окна
+root.geometry('500x450') #размер окна
 #вызов окна упрощённой схемы
 def scheme_simple():
-    scheme = tk.Toplevel(root)
-    return scheme
-c = Canvas(scheme_simple(), width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
-c.delete('reg')
+    return tk.Toplevel(root)
+'''new_tk = scheme_simple()
+c = Canvas(new_tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
+c.delete('reg')'''
 
-def scheme_simple_display():
+def scheme_simple_display(c):
+    c.delete('reg')
     c.pack(side=LEFT)
     j = 0
     for i in dict:
@@ -348,7 +349,11 @@ def scheme_simple_display():
 #окно
 
 
-
+def create_scheme():
+    new_tk = scheme_simple()
+    global scheme_canvas
+    scheme_canvas = Canvas(new_tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
+    scheme_simple_display(scheme_canvas)
 
 
 with open('test2.txt','r',encoding='utf-8') as f:
@@ -430,7 +435,8 @@ filemenu.add_command(label="Открыть...", command=open_file)
 #filemenu.add_command(label="Сохранить...", command=save_file)
 filemenu.add_command(label="Сохранить как...", command=save_as_file)
 mainmenu.add_cascade(label="Схема", menu=schememenu)
-schememenu.add_command(label="Упрощённая схема", command=scheme_simple)
+#schememenu.add_command(label="Упрощённая схема", command=scheme_simple)
+schememenu.add_command(label="Упрощённая схема", command=create_scheme)
 # mainmenu.add_command(label="Структурная схема", command=draw2)
 
 #картинки кнопок
