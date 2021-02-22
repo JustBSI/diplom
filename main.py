@@ -326,11 +326,12 @@ def reset(i):
     for key in dict:
         dict[key].reset()
         #print(key)
+    scheme_simple_display(scheme_canvas)
     #drawer_default_scheme()
     #display(c)
 
 root = Tk()
-root.geometry('500x450') #размер окна
+root.geometry('350x430') #размер окна
 #вызов окна упрощённой схемы
 def scheme_simple():
     return tk.Toplevel(root)
@@ -456,16 +457,16 @@ step_entry_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
 reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
 
 #размещение кнопок
-step_entry_btn .place(x=400, y=7)
-step_detour_btn.place(x=440, y=7)
-step_exit_btn  .place(x=480, y=7)
-reset_btn      .place(x=600, y=7)
+step_entry_btn .place(x=20, y=7)
+step_detour_btn.place(x=60, y=7)
+step_exit_btn  .place(x=100, y=7)
+reset_btn      .place(x=170, y=7)
 
 #конфиги текстового поля
 txt = Text(root, width=35, height=19, font="14", bg='white')
-txt.pack(side=RIGHT)
+txt.pack(side=RIGHT, padx=10, pady=10)
 scroll = Scrollbar(command=txt.yview)
-scroll.pack(side=RIGHT, fill=Y)
+scroll.pack(side=LEFT, fill=Y)
 txt.config(yscrollcommand=scroll.set)
 
 root.mainloop()
