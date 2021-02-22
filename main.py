@@ -464,9 +464,9 @@ reset_btn      .place(x=170, y=7)
 
 #конфиги текстового поля
 txt = Text(root, width=35, height=19, font="14", bg='white')
-txt.pack(side=RIGHT, padx=10, pady=10)
 scroll = Scrollbar(command=txt.yview)
 scroll.pack(side=LEFT, fill=Y)
+txt.pack(side=LEFT, padx=0, pady=10)
 txt.config(yscrollcommand=scroll.set)
 
 root.mainloop()
