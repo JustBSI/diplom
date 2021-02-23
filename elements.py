@@ -47,17 +47,24 @@ class Register:
     def display_2(self, x, y, c, wc):
         c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
         #c.create_rectangle(x+70, y+10, (wc/2)+x+(125/2), y+30, fill='white')
-        xa = 0+(wc/2)+x-(145/2)
-        xb = 10+(wc/2)+x-(145/2)
-        dx = 15
+        xa = 70
+        xb = 75
+        dx = 5
+        r = 0
         print(self.data)
         for i in self.data:
-            xa+=dx
-            xb+=dx
-            if i == 0:
-                c.create_oval(xa, 15+y, xb, 25+y, fill='white', tag='reg')
+            if r%4 != 0:
+                xa+=dx
+                xb+=dx
+                r+=1
             else:
-                c.create_oval(xa, 15+y, xb, 25+y, fill='red', tag='reg')
+                xa += dx+5
+                xb += dx+5
+                r+=1
+            if i == 0:
+                c.create_rectangle(xa, 15+y, xb, 25+y, fill='white', tag='reg')
+            else:
+                c.create_rectangle(xa, 15+y, xb, 25+y, fill='red', tag='reg')
 
 
 class Counter:

@@ -353,7 +353,8 @@ def scheme_simple_display(c):
 def create_scheme():
     new_tk = scheme_simple()
     global scheme_canvas
-    scheme_canvas = Canvas(new_tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
+    elements = len(dict)
+    scheme_canvas = Canvas(new_tk, width=150, height=elements*20, bg='white')
     scheme_simple_display(scheme_canvas)
 
 
