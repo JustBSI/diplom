@@ -339,18 +339,35 @@ def scheme_simple():
 c = Canvas(new_tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
 c.delete('reg')'''
 
+def scheme_struct():
+    return tk.Toplevel(root)
+
+def scheme_struct_display(c):
+    c.delete('reg')
+    c.pack(side=LEFT)
+    j = 0
+    for i in dict:
+        dict[i].display_struct(0, j, c, CANVAS_WIDTH)
+        j += 20
+
 def scheme_simple_display(c):
     c.delete('reg')
     c.pack(side=LEFT)
     j = 0
     for i in dict:
-        dict[i].display_2(0, j, c, CANVAS_WIDTH)
+        dict[i].display_simple(0, j, c, CANVAS_WIDTH)
         j += 20
 #scheme_simple_display(scheme_simple())
 #окно
 
+def create_scheme_struct():
+    new_tk = scheme_simple()
+    global scheme_canvas
+    #elements = len(dict)
+    scheme_canvas = Canvas(new_tk, width=350, height=350, bg='white')
+    scheme_struct_display(scheme_canvas)
 
-def create_scheme():
+def create_scheme_simple():
     new_tk = scheme_simple()
     global scheme_canvas
     elements = len(dict)
@@ -437,9 +454,8 @@ filemenu.add_command(label="Открыть...", command=open_file)
 #filemenu.add_command(label="Сохранить...", command=save_file)
 filemenu.add_command(label="Сохранить как...", command=save_as_file)
 mainmenu.add_cascade(label="Схема", menu=schememenu)
-#schememenu.add_command(label="Упрощённая схема", command=scheme_simple)
-schememenu.add_command(label="Упрощённая схема", command=create_scheme)
-# mainmenu.add_command(label="Структурная схема", command=draw2)
+schememenu.add_command(label="Структурная схема", command=create_scheme_struct)
+schememenu.add_command(label="Упрощённая схема", command=create_scheme_simple)
 
 #картинки кнопок
 step_entry_btn_icon  = PhotoImage(file='media/2.png')
