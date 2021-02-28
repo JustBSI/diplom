@@ -314,7 +314,10 @@ def step(e, rows, i):
         #c.move('mark', 0,18)
         execute(rows[i.count])
         i.inc()
-        scheme_simple_display(scheme_canvas)
+        if mode == 1:
+            scheme_simple_display(scheme_canvas)
+        elif mode == 2:
+            scheme_struct_display(scheme_canvas)
         #drawer_default_scheme()
         #display(c)
 
@@ -326,7 +329,10 @@ def reset(i):
     for key in dict:
         dict[key].reset()
         #print(key)
-    scheme_simple_display(scheme_canvas)
+    if mode == 1:
+        scheme_simple_display(scheme_canvas)
+    elif mode == 2:
+        scheme_struct_display(scheme_canvas)
     #drawer_default_scheme()
     #display(c)
 
@@ -345,10 +351,31 @@ def scheme_struct():
 def scheme_struct_display(c):
     c.delete('reg')
     c.pack(side=LEFT)
-    j = 0
-    for i in dict:
-        dict[i].display_struct(0, j, c, CANVAS_WIDTH)
-        j += 20
+    file = askopenfilename(filetypes=[("Text files", "*.txt")])
+    for row in fileinput.input(file, openhook=fileinput.hook_encoded("utf-8")):
+        str = re.split (' ', row)
+        name = re.split ('\(', str[0])[0]
+        coords = re.split('\,', str[1])
+        if 'Линия' in name:
+            print('Линия')
+            xa = re.findall(r'\d+', coords[0])
+            ya = re.findall(r'\d+', coords[1])
+            xb = re.findall(r'\d+', coords[2])
+            yb = re.findall(r'\d+', coords[3])
+            c.create_line(xa, ya, xb, yb, tag='reg')
+        elif 'Стрелка' in name:
+            print('Стрелка')
+            xa = re.findall(r'\d+', coords[0])
+            ya = re.findall(r'\d+', coords[1])
+            xb = re.findall(r'\d+', coords[2])
+            yb = re.findall(r'\d+', coords[3])
+            c.create_line(xa, ya, xb, yb, tag='reg', arrow=LAST)
+        else:
+            x = re.findall(r'\d+', coords[0])
+            y = re.findall(r'\d+', coords[1])
+            print (x,y)
+            if name in dict:
+                dict[name].display_struct(int(x[0]), int(y[0]), c, CANVAS_WIDTH)
 
 def scheme_simple_display(c):
     c.delete('reg')
@@ -363,6 +390,8 @@ def scheme_simple_display(c):
 def create_scheme_struct():
     new_tk = scheme_simple()
     global scheme_canvas
+    global mode
+    mode = 2
     #elements = len(dict)
     scheme_canvas = Canvas(new_tk, width=350, height=350, bg='white')
     scheme_struct_display(scheme_canvas)
@@ -370,6 +399,8 @@ def create_scheme_struct():
 def create_scheme_simple():
     new_tk = scheme_simple()
     global scheme_canvas
+    global mode
+    mode = 1
     elements = len(dict)
     scheme_canvas = Canvas(new_tk, width=150, height=elements*20, bg='white')
     scheme_simple_display(scheme_canvas)
