@@ -29,22 +29,42 @@ class Register:
             self.data[i]=0
 
     #рисование структурки
-    def display(self, x, y, c, wc):
-        c.create_text((wc/2)+x, y+10, text=self.name, anchor=CENTER)
-        c.create_rectangle((wc/2)+x-(125/2), y+20, (wc/2)+x+(125/2), y+40, fill='white')
-        xa = 0+(wc/2)+x-(145/2)
-        xb = 10+(wc/2)+x-(145/2)
-        dx = 15
+    def display_struct(self, x, y, c, wc):
+        # c.create_rectangle((wc/2)+x-(125/2), y+20, (wc/2)+x+(125/2), y+40, fill='white')
+        # xa = 0+(wc/2)+x-(145/2)
+        # xb = 10+(wc/2)+x-(145/2)
+        # dx = 15
+        # for i in self.data:
+        #     xa+=dx
+        #     xb+=dx
+        #     if i == 0:
+        #         c.create_oval(xa, 25+y, xb, 35+y, fill='white')
+        #     else:
+        #         c.create_oval(xa, 25+y, xb, 35+y, fill='red')
+        xa = -7
+        xb = -2
+        ya = 15
+        yb = 25
+        r = 0
+        print(self.data)
         for i in self.data:
-            xa+=dx
-            xb+=dx
-            if i == 0:
-                c.create_oval(xa, 25+y, xb, 35+y, fill='white')
+            if r%4 != 0:
+                xa += 5
+                xb += 5
+                r += 1
             else:
-                c.create_oval(xa, 25+y, xb, 35+y, fill='red')
+                xa += 10
+                xb += 10
+                r += 1
+            if i == 0:
+                c.create_rectangle(xa+x, ya+y, xb+x, yb+y, fill='white', tag='reg')
+            else:
+                c.create_rectangle(xa+x, ya+y, xb+x, yb+y, fill='red', tag='reg')
+        c.create_text(x+(xb/2), y+7, text=self.name, tag='reg')
+        c.create_rectangle(x-2, y-2, xb+x+5, yb+y+5, tag='reg')
 
     #рисование упрощённой схемы
-    def display_2(self, x, y, c, wc):
+    def display_simple(self, x, y, c, wc):
         c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
         #c.create_rectangle(x+70, y+10, (wc/2)+x+(125/2), y+30, fill='white')
         xa = 70
@@ -103,12 +123,12 @@ class Adder:
             return(c,carry,overflow)
 
     #рисование элемента на структурке
-    def display(self, x, y, c, wc):
+    def display_struct(self, x, y, c, wc):
         c.create_text((wc/2)+x,y+10,text=self.name, anchor=CENTER)
         c.create_polygon(x+((wc/2)-50), y+20, x+40+((wc/2)-50), y+20, x+50+((wc/2)-50), y+30, x+60+((wc/2)-50), y+20, x+100+((wc/2)-50), y+20, x+80+((wc/2)-50), y+43, x+20+((wc/2)-50), y+43, outline='black', fill='white')
         #print (x)
 
-    def display_2(self, x, y, c, wc):
+    def display_simple(self, x, y, c, wc):
         print(" ")
 
     def reset(self):
