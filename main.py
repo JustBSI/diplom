@@ -464,10 +464,16 @@ step_exit_btn  .place(x=100, y=7)
 reset_btn      .place(x=170, y=7)
 
 #конфиги текстового поля
-txt = Text(root, width=35, height=19, font="14", bg='white')
-scroll = Scrollbar(command=txt.yview)
+mainframe = Frame(root)
+txt = Text(mainframe, width=35, height=19, font="14", bg='white')
+scroll = Scrollbar(mainframe, command=txt.yview)
+poiner_canvas = Canvas(root, width=10, height=18*19, bg='white')
+
+poiner_canvas.pack(side=LEFT)
+mainframe.pack(side=LEFT)
+#txt.pack(side=LEFT, padx=0, pady=10)
+txt.pack(side=LEFT)
 scroll.pack(side=LEFT, fill=Y)
-txt.pack(side=LEFT, padx=0, pady=10)
 txt.config(yscrollcommand=scroll.set)
 
 root.mainloop()
