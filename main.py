@@ -36,7 +36,7 @@ class Node:
     types = ['ACT', 'IF', 'ELSE', 'WHILE']
     ACT, IF, ELSE, WHILE = range(4)
 
-    def __init__(self, row=None, out=None, type=None):
+    def __init__(self, row=None, out=None, rownum=None): #type=None):
         if row:
             self.raw     = row
             self.pattern = Lexer.parse(row)
@@ -50,28 +50,33 @@ class Node:
                 self.type = Node.ACT
         if out:
             self.out = out
-        if type:
-            self.type = type
+        if rownum:
+            self.rownum = rownum
+        #if type:
+            #self.type = type
 
     @staticmethod
-    def parse(rows, out=None):
+    def parse(rows, out=None, bias=0):
 
         current = Node()
         first = current
         i = 0
-        while ("" in rows):
-            rows.remove("")
+        #while ("" in rows):
+            #rows.remove("")
         while i < len(rows):
-            if rows[i][0:4]!="    ":
-                current.next = Node(rows[i][:-1], out)
+            if not rows[i].strip():
+                i += 1
+            elif rows[i][0:4]!="    ":
+                current.next = Node(rows[i][:-1], out, bias+i)
                 current = current.next
+                current.rownum = bias+i
                 i += 1
             else:
                 inside_rows = []
                 while i<len(rows) and rows[i][0:4]=="    ":
                     inside_rows.append(rows[i][4:])
                     i += 1
-                current.inside = Node.parse(inside_rows, current)
+                current.inside = Node.parse(inside_rows, current, i-len(inside_rows)+bias)
 
         return first.next
 
@@ -179,7 +184,7 @@ class Node:
 
     def display(self, indent=0):
         try:
-            print('| '*indent+Node.types[self.type]+' '+self.raw+' '+str(self.pattern)+' '+str(hasattr(self, "next")))
+            print(str(self.rownum)+' '+'| '*indent+Node.types[self.type]+' '+self.raw+' '+str(self.pattern)+' '+str(hasattr(self, "next")))
         except Exception:
             print('strange node')
         if hasattr(self, "inside"):
