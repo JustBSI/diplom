@@ -316,7 +316,7 @@ def execute(row):
 def step(e, rows, i):
     rows = txt.get("1.0", END).splitlines()
     if i.count<size:
-        #c.move('mark', 0,18)
+        pointer_canvas.move('pointer', 0, ROWHEIGHT)
         execute(rows[i.count])
         i.inc()
         if mode == 1:
@@ -516,12 +516,14 @@ step_exit_btn  .place(x=100, y=7)
 reset_btn      .place(x=170, y=7)
 
 #конфиги текстового поля
+ROWHEIGHT = 18
 mainframe = Frame(root)
 txt = Text(mainframe, width=35, height=19, font="14", bg='white')
 scroll = Scrollbar(mainframe, command=txt.yview)
-poiner_canvas = Canvas(root, width=10, height=18*19, bg='white')
+pointer_canvas = Canvas(root, width=10, height=18*19, bg='white')
+pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
 
-poiner_canvas.pack(side=LEFT)
+pointer_canvas.pack(side=LEFT)
 mainframe.pack(side=LEFT)
 #txt.pack(side=LEFT, padx=0, pady=10)
 txt.pack(side=LEFT)
