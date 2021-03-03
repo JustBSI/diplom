@@ -328,7 +328,7 @@ def step(e, rows, i):
 
 #сброс
 def reset(i):
-    pointer_canvas.coords('pointer', 0, ROWHEIGHT/2+2, 10, ROWHEIGHT/2+2)
+    pointer_canvas.delete('pointer')
     txt.configure(state=NORMAL)
     step_entry_btn.place_forget()
     step_detour_btn.place_forget()
@@ -466,6 +466,7 @@ def start():
     step_detour_btn.place(x=60, y=7)
     step_exit_btn.place(x=100, y=7)
     reset_btn.place(x=170, y=7)
+    pointer_canvas.create_line(0, ROWHEIGHT / 2 + 2, 10, ROWHEIGHT / 2 + 2, arrow=LAST, tag='pointer')
 
 #открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():
@@ -540,7 +541,7 @@ mainframe = Frame(root)
 txt = Text(mainframe, width=35, height=19, font="14", bg='white')
 scroll = Scrollbar(mainframe, command=txt.yview)
 pointer_canvas = Canvas(root, width=10, height=18*19, bg='white')
-pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
+#pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
 
 pointer_canvas.pack(side=LEFT)
 mainframe.pack(side=LEFT)
