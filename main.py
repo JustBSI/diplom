@@ -328,6 +328,13 @@ def step(e, rows, i):
 
 #сброс
 def reset(i):
+    pointer_canvas.coords('pointer', 0, ROWHEIGHT/2+2, 10, ROWHEIGHT/2+2)
+    txt.configure(state=NORMAL)
+    step_entry_btn.place_forget()
+    step_detour_btn.place_forget()
+    step_exit_btn.place_forget()
+    reset_btn.place_forget()
+    start_btn.place(x=20, y=7)
     #rows = txt.get("1.0", END).splitlines()
     #c.coords('mark',335, 65, 350, 65)
     i.reset()
@@ -452,6 +459,14 @@ f.close()
 
 cc = classCounter() #счётчик
 
+def start():
+    txt.configure(state=DISABLED)
+    start_btn.place_forget()
+    step_entry_btn.place(x=20, y=7)
+    step_detour_btn.place(x=60, y=7)
+    step_exit_btn.place(x=100, y=7)
+    reset_btn.place(x=170, y=7)
+
 #открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():
     global rows
@@ -498,22 +513,26 @@ step_entry_btn_icon  = PhotoImage(file='media/2.png')
 step_detour_btn_icon = PhotoImage(file='media/3.png')
 step_exit_btn_icon   = PhotoImage(file='media/1.png')
 reset_btn_icon       = PhotoImage(file='media/4.png')
+start_btn_icon       = PhotoImage(file='media/5.png')
 
 #размеры кнопок
 step_entry_btn  = Button(width="20",height="20", image=step_entry_btn_icon)
 step_detour_btn = Button(width="20",height="20", image=step_detour_btn_icon)
 step_exit_btn   = Button(width="20",height="20", image=step_exit_btn_icon)
 reset_btn       = Button(width="20",height="20", image=reset_btn_icon)
+start_btn       = Button(width="20",height="20", image=start_btn_icon)
 
 #функционал кнопок
 step_entry_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
 reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
+start_btn.bind('<Button-1>', lambda e, f="Verdana": start())
 
 #размещение кнопок
-step_entry_btn .place(x=20, y=7)
-step_detour_btn.place(x=60, y=7)
-step_exit_btn  .place(x=100, y=7)
-reset_btn      .place(x=170, y=7)
+step_entry_btn .place_forget#(x=20, y=7)
+step_detour_btn.place_forget#(x=60, y=7)
+step_exit_btn  .place_forget#(x=100, y=7)
+reset_btn      .place_forget#(x=170, y=7)
+start_btn      .place(x=20, y=7)
 
 #конфиги текстового поля
 ROWHEIGHT = 18
