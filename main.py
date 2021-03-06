@@ -16,9 +16,9 @@ class Lexer:
 
     @classmethod
     def parse(self, row):
-        str = row.split()
+        string = row.split()
         result = []
-        for word in str:
+        for word in string:
             if   word in dict.keys():
                 result.append(self.ELEM)
             elif word in self.keywords.keys():
@@ -183,9 +183,12 @@ class Node:
 
 
     def display(self, indent=0):
+        ans = ''
         try:
             print(str(self.rownum)+' '+'| '*indent+Node.types[self.type]+' '+self.raw+' '+str(self.pattern)+' '+str(hasattr(self, "next")))
-        except Exception:
+        #print(str(self.rownum))
+        except Exception as e:
+            #print(e)
             print('strange node')
         if hasattr(self, "inside"):
             self.inside.display(indent+1)
@@ -286,9 +289,9 @@ class classCounter:
         return self.count
 
 #конвертер
-def convert(str):
-    list=[0]*len(str)
-    for i, l in enumerate(str):
+def convert(string):
+    list=[0]*len(string)
+    for i, l in enumerate(string):
         if l=="1":
             list[i]=1
     return list
@@ -360,14 +363,15 @@ c.delete('reg')'''
 def scheme_struct():
     return tk.Toplevel(root)
 
+#рисование схемы по файлу
 def scheme_struct_display(c):
     c.delete('reg')
     c.pack(side=LEFT)
     file = askopenfilename(filetypes=[("Text files", "*.txt")])
     for row in fileinput.input(file, openhook=fileinput.hook_encoded("utf-8")):
-        str = re.split (' ', row)
-        name = re.split ('\(', str[0])[0]
-        coords = re.split('\,', str[1])
+        string = re.split (' ', row)
+        name = re.split ('\(', string[0])[0]
+        coords = re.split('\,', string[1])
         if 'Линия' in name:
             print('Линия')
             xa = re.findall(r'\d+', coords[0])
@@ -389,6 +393,7 @@ def scheme_struct_display(c):
             if name in dict:
                 dict[name].display_struct(int(x[0]), int(y[0]), c, CANVAS_WIDTH)
 
+#автоматическое рисование упрощённой схемы
 def scheme_simple_display(c):
     c.delete('reg')
     c.pack(side=LEFT)
@@ -418,22 +423,22 @@ def create_scheme_simple():
     scheme_simple_display(scheme_canvas)
 
 
-with open('test2.txt','r',encoding='utf-8') as f:
-    start = Node.parse(list(f))
-    start.display()
+#with open('test2.txt','r',encoding='utf-8') as f:
+#    start = Node.parse(list(f))
+#    start.display()
 
 #анализ элементной базы
 f = open('elements.txt','r',encoding='utf-8')
 for row in f:
     if   'Регистр'  in row:
-        str        = re.split (' ', row)
-        name       = re.split ('\(', str[1])[0]
-        capacity   = re.findall(r'\d+', str[1])
+        string        = re.split (' ', row)
+        name       = re.split ('\(', string[1])[0]
+        capacity   = re.findall(r'\d+', string[1])
         dict[name] = Register(int(capacity[0]), name)
     elif 'Сумматор' in row:
-        str        = re.split (' ', row)
-        name       = re.split ('\(', str[1])[0]
-        capacity   = re.findall(r'\d+', str[1])
+        string        = re.split (' ', row)
+        name       = re.split ('\(', string[1])[0]
+        capacity   = re.findall(r'\d+', string[1])
         dict[name] = Adder(int(capacity[0]), name)
 f.close()
 
@@ -467,6 +472,16 @@ def start():
     step_exit_btn.place(x=100, y=7)
     reset_btn.place(x=170, y=7)
     pointer_canvas.create_line(0, ROWHEIGHT / 2 + 2, 10, ROWHEIGHT / 2 + 2, arrow=LAST, tag='pointer')
+    global currentnode
+    rows = txt.get("1.0", END).splitlines()
+    currentnode = Node.parse(rows)
+    currentnode.display()
+
+
+def step_inside(e):
+    global currentnode
+    currentnode = currentnode.step_inside()
+    pointer_canvas.move('pointer', 0, ROWHEIGHT)
 
 #открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():
@@ -524,15 +539,16 @@ reset_btn       = Button(width="20",height="20", image=reset_btn_icon)
 start_btn       = Button(width="20",height="20", image=start_btn_icon)
 
 #функционал кнопок
-step_entry_btn.bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
+step_entry_btn .bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
+step_detour_btn.bind('<Button-1>', step_inside)
 reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
 start_btn.bind('<Button-1>', lambda e, f="Verdana": start())
 
 #размещение кнопок
-step_entry_btn .place_forget#(x=20, y=7)
-step_detour_btn.place_forget#(x=60, y=7)
-step_exit_btn  .place_forget#(x=100, y=7)
-reset_btn      .place_forget#(x=170, y=7)
+step_entry_btn .place_forget  #(x=20, y=7)
+step_detour_btn.place_forget  #(x=60, y=7)
+step_exit_btn  .place_forget  #(x=100, y=7)
+reset_btn      .place_forget  #(x=170, y=7)
 start_btn      .place(x=20, y=7)
 
 #конфиги текстового поля
