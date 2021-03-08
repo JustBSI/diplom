@@ -61,13 +61,11 @@ class Node:
         current = Node()
         first = current
         i = 0
-        #while ("" in rows):
-            #rows.remove("")
         while i < len(rows):
             if not rows[i].strip():
                 i += 1
             elif rows[i][0:4]!="    ":
-                current.next = Node(rows[i][:-1], out, bias+i)
+                current.next = Node(rows[i], out, bias+i)
                 current = current.next
                 current.rownum = bias+i
                 i += 1
@@ -208,6 +206,8 @@ class Node:
             return self.condition()
         elif self.pattern[0] == Lexer.WHILE:
             return self.condition()
+        #else:
+            #print('nothing was done')
 
     def execute_all(self):
         current = self
@@ -482,6 +482,10 @@ def step_inside(e):
     global currentnode
     currentnode = currentnode.step_inside()
     pointer_canvas.move('pointer', 0, ROWHEIGHT)
+    if mode == 1:
+        scheme_simple_display(scheme_canvas)
+    elif mode == 2:
+        scheme_struct_display(scheme_canvas)
 
 #открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():
