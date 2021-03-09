@@ -10,8 +10,8 @@ dict = {} #словарь с элементами
 class Lexer:
 
     words = ['ASSIG', 'ELEM', 'ADD', 'NUM', 'IF', 'ELSE', 'WHILE', 'EQU', 'MORE', 'LESS', 'NOT_EQU', 'MORE_EQU', 'LESS_EQU']
-    ASSIG, ELEM, ADD, NUM, IF, ELSE, WHILE, EQU, MORE, LESS, NOT_EQU, MORE_EQU, LESS_EQU = range(13)
-    symbols = {':=': ASSIG, '+': ADD, '=': EQU, '>': MORE, '<': LESS, '!=': NOT_EQU, '>=': MORE_EQU, '<=': LESS_EQU}
+    ASSIG, ELEM, ADD, NUM, IF, ELSE, WHILE, EQU, MORE, LESS, NOT_EQU, MORE_EQU, LESS_EQU, ELEM_SLICE, RIGHT_SHIFT, LEFT_SHIFT = range(16)
+    symbols = {':=': ASSIG, '+': ADD, '=': EQU, '>': MORE, '<': LESS, '!=': NOT_EQU, '>=': MORE_EQU, '<=': LESS_EQU, '>>': RIGHT_SHIFT, '<<': LEFT_SHIFT}
     keywords = {'если': IF, 'иначе': ELSE, 'пока': WHILE}
 
     @classmethod
@@ -21,6 +21,8 @@ class Lexer:
         for word in string:
             if   word in dict.keys():
                 result.append(self.ELEM)
+            elif word.split('[')[0] in dict.keys():
+                result.append(self.ELEM_SLICE)
             elif word in self.keywords.keys():
                 result.append(self.keywords[word])
             elif word in self.symbols.keys():
@@ -81,10 +83,10 @@ class Node:
 
     def step(self):
         if self.type == Node.ACT:
-            self.execute()
+            self.execute
             return self.find_next()
         elif self.type == Node.IF:
-            if self.execute():
+            if self.execute:
                 self.inside.execute_all()
                 if hasattr(self, "next"):
                     if self.next.type == Node.ELSE:
@@ -103,7 +105,7 @@ class Node:
                 else:
                     return self.find_out()
         elif self.type == Node.WHILE:
-            while self.execute():
+            while self.execute:
                 self.inside.execute_all()
             return self.find_next()
         else:
@@ -112,10 +114,10 @@ class Node:
 
     def step_inside(self):
         if self.type == Node.ACT:
-            self.execute()
+            self.execute
             return self.find_next()
         elif self.type == Node.IF:
-            if self.execute():
+            if self.execute:
                 return self.inside
             else:
                 if hasattr(self, "next"):
@@ -126,7 +128,7 @@ class Node:
                 else:
                     return self.find_out()
         elif self.type == Node.WHILE:
-            if self.execute():
+            if self.execute:
                 return self.inside
             else:
                 return self.find_next()
@@ -195,14 +197,29 @@ class Node:
             self.next.display(indent)
 
     # исполнение
+    @property
     def execute(self):
         c = self.raw.split()
         if   self.pattern == [1, 0, 3]:
-            dict[c[0]].set(convert(c[2]))
+            dict[c[0]].set(c[2])
         elif self.pattern == [1, 0, 1]:
             dict[c[0]].set(dict[c[2]].data)
         elif self.pattern == [1, 0, 1, 2, 1]:
             dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
+        elif self.pattern == [1, 0, 1, 2, 3]:
+            if type(dict[c[2]]).__name__ == 'Counter':
+                dict[c[2]].count += int(c[4])
+        elif self.pattern == [1, 0, 1, 14, 3]:
+            if type(dict[c[2]]).__name__ == 'Register':
+                new_data = [0]+dict[c[2]].data[:-1]
+                for i in range(len(new_data)):
+                    dict[c[0]].data[i] = new_data[i]
+        elif self.pattern == [1, 0, 1, 15, 3]:
+            if type(dict[c[2]]).__name__ == 'Register':
+                new_data = dict[c[2]].data[1:]
+                new_data.append(0)
+                for i in range(len(new_data)):
+                    dict[c[0]].data[i] = new_data[i]
         elif self.pattern[0] == Lexer.IF:
             return self.condition()
         elif self.pattern[0] == Lexer.WHILE:
@@ -214,10 +231,10 @@ class Node:
         current = self
         while hasattr(current, "next"):
             if current.type == Node.ACT:
-                current.execute()
+                current.execute
                 current = current.next
             elif current.type == Node.IF:
-                if current.execute():
+                if current.execute:
                     current.inside.execute_all()
                     if current.next.type == Node.ELSE:
                         if hasattr(current.next, "next"):
@@ -231,35 +248,47 @@ class Node:
                         if hasattr(current, "next"):
                             current = current.next
             elif current.type == Node.WHILE:
-                while current.execute():
+                while current.execute:
                     current.inside.execute_all()
                 current = current.next
             else:
                 print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
         if current.type == Node.ACT:
-            current.execute()
+            current.execute
         elif current.type == Node.IF:
-            if current.execute():
+            if current.execute:
                 current.inside.execute_all()
         elif current.type == Node.WHILE:
-            while current.execute():
+            while current.execute:
                 current.inside.execute_all()
         else:
             print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
         return current
 
+    def get_pattern_value(self, num, c):
+        if    self.pattern[num] == Lexer.ELEM:
+            return dict[c[num]].value()
+        elif  self.pattern[num] == Lexer.ELEM_SLICE:
+            v = c[num].split('[')
+            return dict[v[0]].slice_value(v[1][:-1].strip())
+        elif  self.pattern[num] == Lexer.NUM:
+            return int(c[num])
+
 
     def condition(self):
         c = self.raw.split()
-        if    self.pattern[1] == Lexer.ELEM:
-            op1 = dict[c[1]].value()
-        elif  self.pattern[1] == Lexer.NUM:
-            op1 = int(c[1])
-        if    self.pattern[3] == Lexer.ELEM:
-            op2 = dict[c[3]].value()
-        elif  self.pattern[3] == Lexer.NUM:
-            op2 = int(c[3])
-        if   c[2] == '==':
+        #if    self.pattern[1] == Lexer.ELEM:
+        #    op1 = dict[c[1]].value()
+        #elif  self.pattern[1] == Lexer.NUM:
+        #    op1 = int(c[1])
+        #if    self.pattern[3] == Lexer.ELEM:
+        #    op2 = dict[c[3]].value()
+        #elif  self.pattern[3] == Lexer.NUM:
+        #    op2 = int(c[3])
+        op1 = self.get_pattern_value(1, c)
+        op2 = self.get_pattern_value(3, c)
+        print(op1 == op2)
+        if   c[2] == '=':
             return op1 == op2
         elif c[2] == '>':
             return op1  > op2
@@ -490,9 +519,9 @@ def start():
 
 def step_inside(e):
     global currentnode
-    if hasattr(currentnode, 'next'):
-        h1 = currentnode.rownum
-        currentnode = currentnode.step_inside()
+    h1 = currentnode.rownum
+    currentnode = currentnode.step_inside()
+    if currentnode:
         h2 = currentnode.rownum
         pointer_canvas.move('pointer', 0, (h2-h1)*ROWHEIGHT)
         if mode == 1:
@@ -500,15 +529,8 @@ def step_inside(e):
         elif mode == 2:
             scheme_struct_display(scheme_canvas)
     else:
-        if currentnode:
-            currentnode = currentnode.step_inside()
-            pointer_canvas.delete('pointer')
-            if mode == 1:
-                scheme_simple_display(scheme_canvas)
-            elif mode == 2:
-                scheme_struct_display(scheme_canvas)
-        else:
-            reset(cc)
+        pointer_canvas.delete('pointer')
+        reset(cc)
 
 #открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():

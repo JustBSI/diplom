@@ -20,9 +20,17 @@ class Register:
         self.name=name
 
     def set(self, data):
-        if len(self.data)==len(data):
-            for i in range(len(data)):
-                self.data[i]=data[i]
+        l = len(self.data)
+        if l == len(data):
+            for i in range(l):
+                self.data[i] = int(data[i])
+        elif int(data) < 2**l:
+            current = int(data)
+            for b in self.data:
+                b = current % 2
+                current -= current % 2
+                current /= 2
+            self.data.reverse()
 
     def reset(self):
         for i in range(len(self.data)):
@@ -35,6 +43,10 @@ class Register:
             result += digit*factor
             factor *= 2
         return result
+
+    def slice_value(self, slice):
+        if ':' not in slice:
+            return self.data[int(slice)]
 
     #рисование структурки
     def display_struct(self, x, y, c, wc):
@@ -110,6 +122,9 @@ class Counter:
                 self.reset()
         else:
             self.count += 1
+
+    def set(self, data):
+        self.count = int(data)
 
     def reset(self):
         self.count = 0
