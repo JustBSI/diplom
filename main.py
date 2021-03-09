@@ -25,7 +25,8 @@ class Lexer:
                 result.append(self.keywords[word])
             elif word in self.symbols.keys():
                 result.append(self.symbols[word])
-            elif len(word.replace('0', '').replace('1', '')) == 0:
+            #elif len(word.replace('0', '').replace('1', '')) == 0:
+            elif len(re.sub(r"\d+", "", word, flags=re.UNICODE)) == 0:
                 result.append(self.NUM)
         return result
 
@@ -251,24 +252,24 @@ class Node:
     def condition(self):
         c = self.raw.split()
         if    self.pattern[1] == Lexer.ELEM:
-            op1 = dict[c[1]].count
+            op1 = dict[c[1]].value()
         elif  self.pattern[1] == Lexer.NUM:
             op1 = int(c[1])
         if    self.pattern[3] == Lexer.ELEM:
-            op2 = dict[c[3]].count
+            op2 = dict[c[3]].value()
         elif  self.pattern[3] == Lexer.NUM:
             op2 = int(c[3])
-        if   c[2] == Lexer.EQU:
+        if   c[2] == '==':
             return op1 == op2
-        elif c[2] == Lexer.MORE:
+        elif c[2] == '>':
             return op1  > op2
-        elif c[2] == Lexer.LESS:
+        elif c[2] == '<':
             return op1  < op2
-        elif c[2] == Lexer.NOT_EQU:
+        elif c[2] == '!=':
             return op1 != op2
-        elif c[2] == Lexer.MORE_EQU:
+        elif c[2] == '>=':
             return op1 >= op2
-        elif c[2] == Lexer.LESS_EQU:
+        elif c[2] == '<=':
             return op1 <= op2
         else:
             return False
@@ -431,15 +432,23 @@ def create_scheme_simple():
 f = open('elements.txt','r',encoding='utf-8')
 for row in f:
     if   'Регистр'  in row:
-        string        = re.split (' ', row)
+        string     = re.split (' ', row)
         name       = re.split ('\(', string[1])[0]
         capacity   = re.findall(r'\d+', string[1])
         dict[name] = Register(int(capacity[0]), name)
     elif 'Сумматор' in row:
-        string        = re.split (' ', row)
+        string     = re.split (' ', row)
         name       = re.split ('\(', string[1])[0]
         capacity   = re.findall(r'\d+', string[1])
         dict[name] = Adder(int(capacity[0]), name)
+    elif 'Счётчик' in row:
+        string     = re.split (' ', row)
+        name       = re.split ('\(', string[1])[0]
+        capacity   = re.findall(r'\d+', string[1])
+        if capacity:
+            dict[name] = Counter(name, int(capacity[0]))
+        else:
+            dict[name] = Counter(name)
 f.close()
 
 #рисование схемы со стрелочками и блоками
@@ -471,7 +480,8 @@ def start():
     step_detour_btn.place(x=60, y=7)
     step_exit_btn.place(x=100, y=7)
     reset_btn.place(x=170, y=7)
-    pointer_canvas.create_line(0, ROWHEIGHT / 2 + 2, 10, ROWHEIGHT / 2 + 2, arrow=LAST, tag='pointer')
+    #global pointer
+    pointer = pointer_canvas.create_line(0, ROWHEIGHT / 2 + 2, 10, ROWHEIGHT / 2 + 2, arrow=LAST, tag='pointer')
     global currentnode
     rows = txt.get("1.0", END).splitlines()
     currentnode = Node.parse(rows)
@@ -480,12 +490,25 @@ def start():
 
 def step_inside(e):
     global currentnode
-    currentnode = currentnode.step_inside()
-    pointer_canvas.move('pointer', 0, ROWHEIGHT)
-    if mode == 1:
-        scheme_simple_display(scheme_canvas)
-    elif mode == 2:
-        scheme_struct_display(scheme_canvas)
+    if hasattr(currentnode, 'next'):
+        h1 = currentnode.rownum
+        currentnode = currentnode.step_inside()
+        h2 = currentnode.rownum
+        pointer_canvas.move('pointer', 0, (h2-h1)*ROWHEIGHT)
+        if mode == 1:
+            scheme_simple_display(scheme_canvas)
+        elif mode == 2:
+            scheme_struct_display(scheme_canvas)
+    else:
+        if currentnode:
+            currentnode = currentnode.step_inside()
+            pointer_canvas.delete('pointer')
+            if mode == 1:
+                scheme_simple_display(scheme_canvas)
+            elif mode == 2:
+                scheme_struct_display(scheme_canvas)
+        else:
+            reset(cc)
 
 #открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():

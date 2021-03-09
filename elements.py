@@ -28,6 +28,14 @@ class Register:
         for i in range(len(self.data)):
             self.data[i]=0
 
+    def value(self):
+        result = 0
+        factor = 1
+        for digit in reversed(self.data):
+            result += digit*factor
+            factor *= 2
+        return result
+
     #рисование структурки
     def display_struct(self, x, y, c, wc):
         # c.create_rectangle((wc/2)+x-(125/2), y+20, (wc/2)+x+(125/2), y+40, fill='white')
@@ -71,7 +79,7 @@ class Register:
         xb = 75
         dx = 5
         r = 0
-        print(self.data)
+        #print(self.data)
         for i in self.data:
             if r%4 != 0:
                 xa+=dx
@@ -89,18 +97,33 @@ class Register:
 
 class Counter:
 
-    def __init__(self):
-        self.count=0
+    def __init__(self, name, limit=None):
+        self.name = name
+        self.limit = limit
+        self.count = 0
 
-    def incr(self):
-        self.count+=1
+    def inc(self):
+        if self.limit:
+            if self.count < self.limit:
+                self.count += 1
+            else:
+                self.reset()
+        else:
+            self.count += 1
 
     def reset(self):
-        self.count=0
+        self.count = 0
+
+    def value(self):
+        return self.count
 
     def display(self, x, y, c, wc):
         c.create_text((x + wc) / 2, y + 10, text=self.count, anchor=CENTER)
         c.create_rectangle(60, 0, 74, 14)
+
+    def display_simple(self, x, y, c, wc):
+        c.create_text(x+20, y, text=self.name, anchor=W, tag='reg')
+        c.create_text(x+70, y, text=str(self.count), anchor=W, tag='reg')
 
 
 class Adder:
