@@ -141,7 +141,7 @@ class Node:
         last = self.execute_all()
         current = last.find_out()
         if current.type==Node.WHILE and last.out is current:
-            while current.execute():
+            while current.execute:
                 current.inside.execute_all()
             return current.find_next()
         else:
@@ -533,6 +533,22 @@ def step_inside(e):
         reset(cc)
 
 
+def step_outside(e):
+    global currentnode
+    h1 = currentnode.rownum
+    currentnode = currentnode.step_outside()
+    if currentnode:
+        h2 = currentnode.rownum
+        pointer_canvas.move('pointer', 0, (h2-h1)*ROWHEIGHT)
+        if mode == 1:
+            scheme_simple_display(scheme_canvas)
+        elif mode == 2:
+            scheme_struct_display(scheme_canvas)
+    else:
+        pointer_canvas.delete('pointer')
+        reset(cc)
+
+
 def step_bypass(e):
     global currentnode
     h1 = currentnode.rownum
@@ -605,9 +621,10 @@ reset_btn       = Button(width="20",height="20", image=reset_btn_icon)
 start_btn       = Button(width="20",height="20", image=start_btn_icon)
 
 #функционал кнопок
-step_entry_btn .bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
+#step_entry_btn .bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
 step_entry_btn .bind('<Button-1>', step_bypass)
 step_detour_btn.bind('<Button-1>', step_inside)
+step_exit_btn  .bind('<Button-1>', step_outside)
 reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
 start_btn.bind('<Button-1>', lambda e, f="Verdana": start())
 
