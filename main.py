@@ -287,7 +287,7 @@ class Node:
         #    op2 = int(c[3])
         op1 = self.get_pattern_value(1, c)
         op2 = self.get_pattern_value(3, c)
-        print(op1 == op2)
+        #print(op1 == op2)
         if   c[2] == '=':
             return op1 == op2
         elif c[2] == '>':
@@ -532,6 +532,23 @@ def step_inside(e):
         pointer_canvas.delete('pointer')
         reset(cc)
 
+
+def step_bypass(e):
+    global currentnode
+    h1 = currentnode.rownum
+    currentnode = currentnode.step()
+    if currentnode:
+        h2 = currentnode.rownum
+        pointer_canvas.move('pointer', 0, (h2-h1)*ROWHEIGHT)
+        if mode == 1:
+            scheme_simple_display(scheme_canvas)
+        elif mode == 2:
+            scheme_struct_display(scheme_canvas)
+    else:
+        pointer_canvas.delete('pointer')
+        reset(cc)
+
+
 #открытие файла, разбиение его на массив строк и рисование схемы
 def open_file():
     global rows
@@ -589,6 +606,7 @@ start_btn       = Button(width="20",height="20", image=start_btn_icon)
 
 #функционал кнопок
 step_entry_btn .bind('<Button-1>', lambda e, f="Verdana": step(e, rows, cc))
+step_entry_btn .bind('<Button-1>', step_bypass)
 step_detour_btn.bind('<Button-1>', step_inside)
 reset_btn.bind('<Button-1>', lambda e, f="Verdana": reset(cc))
 start_btn.bind('<Button-1>', lambda e, f="Verdana": start())
