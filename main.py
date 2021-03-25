@@ -510,11 +510,15 @@ def start():
     step_exit_btn.place(x=100, y=7)
     reset_btn.place(x=170, y=7)
     #global pointer
-    pointer = pointer_canvas.create_line(0, ROWHEIGHT / 2 + 2, 10, ROWHEIGHT / 2 + 2, arrow=LAST, tag='pointer')
+    #pointer = pointer_canvas.create_line(0, ROWHEIGHT / 2 + 2, 10, ROWHEIGHT / 2 + 2, arrow=LAST, tag='pointer')
     global currentnode
     rows = txt.get("1.0", END).splitlines()
+    size = len(rows)
     currentnode = Node.parse(rows)
     currentnode.display()
+    print(size)
+    for i in range(size):
+        pointer_canvas.insert(END, '⯈\n')
 
 
 def step_inside(e):
@@ -640,7 +644,7 @@ ROWHEIGHT = 18
 mainframe = Frame(root)
 txt = Text(mainframe, width=35, height=19, font="14", bg='white')
 scroll = Scrollbar(mainframe, command=txt.yview)
-pointer_canvas = Canvas(root, width=10, height=18*19, bg='white')
+pointer_canvas = Text(mainframe, width=2, height=19, bg='white',spacing1=2)
 #pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
 
 pointer_canvas.pack(side=LEFT)
