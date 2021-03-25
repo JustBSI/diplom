@@ -382,7 +382,7 @@ def reset(i):
     #display(c)
 
 root = Tk()
-root.geometry('350x430') #размер окна
+root.geometry('380x300') #размер окна
 #вызов окна упрощённой схемы
 def scheme_simple():
     return tk.Toplevel(root)
@@ -502,6 +502,9 @@ f.close()
 
 cc = classCounter() #счётчик
 
+def add_pointer(num, length):
+    return str(num)+' '*(length-len(str(num))-2)+'⯈'
+
 def start():
     txt.configure(state=DISABLED)
     start_btn.place_forget()
@@ -516,19 +519,25 @@ def start():
     size = len(rows)
     currentnode = Node.parse(rows)
     currentnode.display()
-    print(size)
-    for i in range(size):
+    #print(size)
+    pointer_canvas.insert(END, '1  ⯈\n')
+    for i in range(size-1):
         #pointer_canvas.insert(END, '⯈\n')
-        pointer_canvas.insert(END, str(i)+'\n')
+        pointer_canvas.insert(END, str(i+2)+'\n')
 
 
 def step_inside(e):
     global currentnode
-    h1 = currentnode.rownum
     currentnode = currentnode.step_inside()
     if currentnode:
-        h2 = currentnode.rownum
-        pointer_canvas.move('pointer', 0, (h2-h1)*ROWHEIGHT)
+        pointer_canvas.delete(1.0, END)
+        p=''
+        for i in range(currentnode.rownum):
+            p += str(i+1)+'\n'
+        p += add_pointer(currentnode.rownum+1, 5) + '\n'
+        for i in range(currentnode.rownum+1, len(txt.get("1.0", END).splitlines())):
+            p += str(i+1)+'\n'
+        pointer_canvas.insert(END, p[:-1])
         if mode == 1:
             scheme_simple_display(scheme_canvas)
         elif mode == 2:
@@ -540,11 +549,16 @@ def step_inside(e):
 
 def step_outside(e):
     global currentnode
-    h1 = currentnode.rownum
     currentnode = currentnode.step_outside()
     if currentnode:
-        h2 = currentnode.rownum
-        pointer_canvas.move('pointer', 0, (h2-h1)*ROWHEIGHT)
+        pointer_canvas.delete(1.0, END)
+        p=''
+        for i in range(currentnode.rownum):
+            p += str(i+1)+'\n'
+        p += add_pointer(currentnode.rownum+1, 5) + '\n'
+        for i in range(currentnode.rownum+1, len(txt.get("1.0", END).splitlines())):
+            p += str(i+1)+'\n'
+        pointer_canvas.insert(END, p[:-1])
         if mode == 1:
             scheme_simple_display(scheme_canvas)
         elif mode == 2:
@@ -556,11 +570,16 @@ def step_outside(e):
 
 def step_bypass(e):
     global currentnode
-    h1 = currentnode.rownum
     currentnode = currentnode.step()
     if currentnode:
-        h2 = currentnode.rownum
-        pointer_canvas.move('pointer', 0, (h2-h1)*ROWHEIGHT)
+        pointer_canvas.delete(1.0, END)
+        p=''
+        for i in range(currentnode.rownum):
+            p += str(i+1)+'\n'
+        p += add_pointer(currentnode.rownum+1, 5) + '\n'
+        for i in range(currentnode.rownum+1, len(txt.get("1.0", END).splitlines())):
+            p += str(i+1)+'\n'
+        pointer_canvas.insert(END, p[:-1])
         if mode == 1:
             scheme_simple_display(scheme_canvas)
         elif mode == 2:
@@ -643,16 +662,30 @@ start_btn      .place(x=20, y=7)
 #конфиги текстового поля
 ROWHEIGHT = 18
 mainframe = Frame(root)
-txt = Text(mainframe, width=35, height=10, font="14", bg='white')
-scroll = Scrollbar(mainframe, command=txt.yview)
-pointer_canvas = Text(mainframe, width=2, height=10, bg='white',spacing1=2)
+scroll = Scrollbar(mainframe)
+pointer_canvas = Text(mainframe, width=5, height=10, bg='white',spacing1=2, yscrollcommand=scroll.set)
+txt = Text(mainframe, width=35, height=10, font="14", bg='white', yscrollcommand=scroll.set)
 #pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
+
+def OnMouseWheel(event):
+    pointer_canvas.yview("scroll", event.delta, "units")
+    txt.yview("scroll", event.delta, "units")
+    return "break"
+
+pointer_canvas.bind("<MouseWheel>", OnMouseWheel)
+txt.bind("<MouseWheel>", OnMouseWheel)
+
+def onScroll(*args):
+    pointer_canvas.yview(*args)
+    txt.yview(*args)
+
+scroll.config(command=onScroll)
 
 pointer_canvas.pack(side=LEFT)
 mainframe.pack(side=LEFT)
 #txt.pack(side=LEFT, padx=0, pady=10)
 txt.pack(side=LEFT)
 scroll.pack(side=LEFT, fill=Y)
-txt.config(yscrollcommand=scroll.set)
+#txt.config(yscrollcommand=scroll.set)
 
 root.mainloop()
