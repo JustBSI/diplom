@@ -521,9 +521,10 @@ def start():
     currentnode.display()
     #print(size)
     pointer_canvas.insert(END, '1  ⯈\n')
-    for i in range(size-1):
+    for i in range(size-2):
         #pointer_canvas.insert(END, '⯈\n')
         pointer_canvas.insert(END, str(i+2)+'\n')
+    pointer_canvas.insert(END, str(size))
 
 
 def step_inside(e):
