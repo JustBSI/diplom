@@ -518,7 +518,8 @@ def start():
     currentnode.display()
     print(size)
     for i in range(size):
-        pointer_canvas.insert(END, '⯈\n')
+        #pointer_canvas.insert(END, '⯈\n')
+        pointer_canvas.insert(END, str(i)+'\n')
 
 
 def step_inside(e):
@@ -642,9 +643,9 @@ start_btn      .place(x=20, y=7)
 #конфиги текстового поля
 ROWHEIGHT = 18
 mainframe = Frame(root)
-txt = Text(mainframe, width=35, height=19, font="14", bg='white')
+txt = Text(mainframe, width=35, height=10, font="14", bg='white')
 scroll = Scrollbar(mainframe, command=txt.yview)
-pointer_canvas = Text(mainframe, width=2, height=19, bg='white',spacing1=2)
+pointer_canvas = Text(mainframe, width=2, height=10, bg='white',spacing1=2)
 #pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
 
 pointer_canvas.pack(side=LEFT)
