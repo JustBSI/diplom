@@ -361,7 +361,8 @@ def step(e, rows, i):
 
 #сброс
 def reset(i):
-    pointer_canvas.delete('pointer')
+    #pointer_canvas.delete('pointer')
+    pointer_canvas.delete(1.0, END)
     txt.configure(state=NORMAL)
     step_entry_btn.place_forget()
     step_detour_btn.place_forget()
@@ -544,7 +545,7 @@ def step_inside(e):
         elif mode == 2:
             scheme_struct_display(scheme_canvas)
     else:
-        pointer_canvas.delete('pointer')
+        #pointer_canvas.delete('pointer')
         reset(cc)
 
 
@@ -565,7 +566,7 @@ def step_outside(e):
         elif mode == 2:
             scheme_struct_display(scheme_canvas)
     else:
-        pointer_canvas.delete('pointer')
+        #pointer_canvas.delete('pointer')
         reset(cc)
 
 
@@ -586,7 +587,7 @@ def step_bypass(e):
         elif mode == 2:
             scheme_struct_display(scheme_canvas)
     else:
-        pointer_canvas.delete('pointer')
+        #pointer_canvas.delete('pointer')
         reset(cc)
 
 
