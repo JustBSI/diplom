@@ -200,29 +200,56 @@ class Node:
     @property
     def execute(self):
         c = self.raw.split()
-        if   self.pattern == [1, 0, 3]:
-            dict[c[0]].set(c[2])
-        elif self.pattern == [1, 0, 1]:
-            dict[c[0]].set(dict[c[2]].data)
-        elif self.pattern == [1, 0, 1, 2, 1]:
-            dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
-        elif self.pattern == [1, 0, 1, 2, 3]:
-            if type(dict[c[2]]).__name__ == 'Counter':
-                dict[c[2]].count += int(c[4])
-        elif self.pattern == [1, 0, 1, 14, 3]:
-            if type(dict[c[2]]).__name__ == 'Register':
-                new_data = [0]+dict[c[2]].data[:-1]
-                for i in range(len(new_data)):
-                    dict[c[0]].data[i] = new_data[i]
-        elif self.pattern == [1, 0, 1, 15, 3]:
-            if type(dict[c[2]]).__name__ == 'Register':
-                new_data = dict[c[2]].data[1:]
-                new_data.append(0)
-                for i in range(len(new_data)):
-                    dict[c[0]].data[i] = new_data[i]
-        elif self.pattern[0] == Lexer.IF:
+        p = self.pattern
+        #if   self.pattern == [1, 0, 3]:
+        #    dict[c[0]].set(c[2])
+        #elif self.pattern == [1, 0, 1]:
+        #    dict[c[0]].set(dict[c[2]].data)
+        #elif self.pattern == [1, 0, 1, 2, 1]:
+        #    dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
+        #elif self.pattern == [1, 0, 1, 2, 3]:
+        #    if type(dict[c[2]]).__name__ == 'Counter':
+        #        dict[c[2]].count += int(c[4])
+        #elif self.pattern == [1, 0, 1, 14, 3]:
+        #    if type(dict[c[2]]).__name__ == 'Register':
+        #        new_data = [0]+dict[c[2]].data[:-1]
+        #        for i in range(len(new_data)):
+        #            dict[c[0]].data[i] = new_data[i]
+        #elif self.pattern == [1, 0, 1, 15, 3]:
+        #    if type(dict[c[2]]).__name__ == 'Register':
+        #        new_data = dict[c[2]].data[1:]
+        #        new_data.append(0)
+        #        for i in range(len(new_data)):
+        #            dict[c[0]].data[i] = new_data[i]
+        if p[1] == 0: # если это инструкция присвоения :=
+            if p[0] == 1: # если слева регистр
+                if   len(p) == 3:
+                    if   p[2] == 3: # если справа значение
+                        dict[c[0]].set(c[2])
+                    elif p[2] == 1: # если справа регистр
+                        dict[c[0]].set(dict[c[2]].data)
+                elif len(p) == 5:
+                    if p[3] == 2: # если справа сложение
+                        if p[2] == 1:
+                            if p[4] == 1:
+                                dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
+                            elif p[4] == 3:
+                                if type(dict[c[2]]).__name__ == 'Counter':
+                                    dict[c[2]].count += int(c[4])
+                    elif p[3] == 14: # если справа
+                        if type(dict[c[2]]).__name__ == 'Register':
+                            new_data = [0]+dict[c[2]].data[:-1]
+                            for i in range(len(new_data)):
+                                dict[c[0]].data[i] = new_data[i]
+                    elif p[3] == 15: # если справа
+                        if type(dict[c[2]]).__name__ == 'Register':
+                            new_data = dict[c[2]].data[1:]
+                            new_data.append(0)
+                            for i in range(len(new_data)):
+                                dict[c[0]].data[i] = new_data[i]
+        elif p[0] == Lexer.IF:
             return self.condition()
-        elif self.pattern[0] == Lexer.WHILE:
+        elif p[0] == Lexer.WHILE:
             return self.condition()
         #else:
             #print('nothing was done')
