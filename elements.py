@@ -46,7 +46,33 @@ class Register:
 
     def slice_value(self, slice):
         if ':' not in slice:
-            return self.data[int(slice)]
+            return self.data[int(slice.strip())]
+        else:
+            res = 0
+            count = 0
+            v = slice.strip().split(':')
+            for bit in reversed(self.data[int(v[0]):int(v[1])]):
+                res += bit*(2**count)
+                count += 1
+            return res
+
+    def get_slice(self, slice):
+        if ':' not in slice:
+            return self.data[int(slice.strip())]
+        else:
+            v = slice.strip().split(':')
+            return self.data[int(v[0]):int(v[1])]
+
+    def set_slice(self, slice, data):
+        if ':' not in slice:
+            self.data[int(slice.strip())] = int(data)
+        else:
+            count = 0
+            v = slice.strip().split(':')
+            for bit in self.data[int(v[0]):int(v[1])]:
+                self.data[int(v[0])+count] = data[count]
+                count += 1
+
 
     #рисование структурки
     def display_struct(self, x, y, c, wc):
