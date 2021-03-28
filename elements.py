@@ -1,4 +1,5 @@
 from tkinter import *
+from numpy import invert
 
 class Trigger:
 
@@ -19,30 +20,38 @@ class Register:
         self.data=[0]*n
         self.name=name
 
-    def set(self, data):
-        l = len(self.data)
-        if l == len(data):
-            for i in range(l):
-                self.data[i] = int(data[i])
-        elif int(data) < 2**l:
-            current = int(data)
-            for b in self.data:
-                b = current % 2
-                current -= current % 2
-                current /= 2
-            self.data.reverse()
+    #def set(self, data):
+    #    l = len(self.data)
+    #    if l == len(data):
+    #        for i in range(l):
+    #            self.data[i] = int(data[i])
+    #    elif int(data) < 2**l:
+    #        current = int(data)
+    #        for b in self.data:
+    #            b = current % 2
+    #            current -= current % 2
+    #            current /= 2
+    #        self.data.reverse()
 
     def reset(self):
         for i in range(len(self.data)):
             self.data[i]=0
 
-    def value(self):
-        result = 0
-        factor = 1
-        for digit in reversed(self.data):
-            result += digit*factor
-            factor *= 2
-        return result
+    def value(self, slice=None):
+        if slice and ':' not in slice:
+            return self.data[int(slice.strip())]
+        else:
+            if slice:
+                v = slice.strip().split(':')
+                d = self.data[int(v[0]):int(v[1])]
+            else:
+                d = self.data
+            result = 0
+            factor = 1
+            for digit in reversed(self.data):
+                result += digit*factor
+                factor *= 2
+            return result
 
     def slice_value(self, slice):
         if ':' not in slice:
@@ -56,22 +65,31 @@ class Register:
                 count += 1
             return res
 
-    def get_slice(self, slice):
+    def get(self, slice=None, invert=False):
         if ':' not in slice:
             return self.data[int(slice.strip())]
         else:
             v = slice.strip().split(':')
             return self.data[int(v[0]):int(v[1])]
 
-    def set_slice(self, slice, data):
-        if ':' not in slice:
-            self.data[int(slice.strip())] = int(data)
-        else:
-            count = 0
-            v = slice.strip().split(':')
-            for bit in self.data[int(v[0]):int(v[1])]:
-                self.data[int(v[0])+count] = data[count]
-                count += 1
+    def set(self, data, slice=None):
+        if type(data).__name__=='str':
+            for i in range(len(data)):
+                self.data[i] = int(data[i])
+        elif type(data).__name__=='list':
+            if not slice:
+                count = 0
+                for bit in self.data:
+                    self.data[count] = data[count]
+                    count += 1
+            elif ':' not in slice:
+                self.data[int(slice.strip())] = int(data)
+            else:
+                count = 0
+                v = slice.strip().split(':')
+                for bit in self.data[int(v[0]):int(v[1])]:
+                    self.data[int(v[0])+count] = data[count]
+                    count += 1
 
 
     #рисование структурки

@@ -15,11 +15,21 @@ class Lexer:
     keywords = {'если': IF, 'иначе': ELSE, 'пока': WHILE}
 
     @classmethod
+    def is_elem(cls, word):
+        w = word
+        if w[0] == '-':
+            w = w[1:]
+        if '[' in w:
+            w = w.split('[')[0]
+        return w in dict.keys()
+
+
+    @classmethod
     def parse(self, row):
         string = row.split()
         result = []
         for word in string:
-            if   word in dict.keys():
+            if   self.is_elem(word):
                 result.append(self.ELEM)
             elif word.split('[')[0] in dict.keys():
                 result.append(self.ELEM_SLICE)
@@ -222,19 +232,19 @@ class Node:
         #        for i in range(len(new_data)):
         #            dict[c[0]].data[i] = new_data[i]
         if p[1] == 0: # если это инструкция присвоения :=
-            if p[0] == 1: # если слева регистр
+            if p[0] == 1: # если слева элемент
                 if   len(p) == 3:
                     if   p[2] == 3: # если справа значение
                         dict[c[0]].set(c[2])
-                    elif p[2] == 1: # если справа регистр
+                    elif p[2] == 1: # если справа элемент
                         dict[c[0]].set(dict[c[2]].data)
                 elif len(p) == 5:
                     if p[3] == 2: # если справа сложение
-                        if p[2] == 1:
-                            if p[4] == 1:
+                        if p[2] == 1: # если первый операнд элемент
+                            if p[4] == 1: # если второй операнд элемент
                                 dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
-                            elif p[4] == 3:
-                                if type(dict[c[2]]).__name__ == 'Counter':
+                            elif p[4] == 3: # если второй операнд значение
+                                if type(dict[c[2]]).__name__ == 'Counter': # если второй операнд счётчик
                                     dict[c[2]].count += int(c[4])
                     elif p[3] == 14: # если справа
                         if type(dict[c[2]]).__name__ == 'Register':
@@ -294,7 +304,10 @@ class Node:
 
     def get_pattern_value(self, num, c):
         if    self.pattern[num] == Lexer.ELEM:
-            return dict[c[num]].value()
+            if '[' in c[num]:
+                return dict[c[num].split('[')[0]].value(c[num].split('[')[1].split(']')[0].strip())
+            else:
+                return dict[c[num]].value()
         elif  self.pattern[num] == Lexer.ELEM_SLICE:
             v = c[num].split('[')
             return dict[v[0]].slice_value(v[1][:-1].strip())
@@ -304,14 +317,6 @@ class Node:
 
     def condition(self):
         c = self.raw.split()
-        #if    self.pattern[1] == Lexer.ELEM:
-        #    op1 = dict[c[1]].value()
-        #elif  self.pattern[1] == Lexer.NUM:
-        #    op1 = int(c[1])
-        #if    self.pattern[3] == Lexer.ELEM:
-        #    op2 = dict[c[3]].value()
-        #elif  self.pattern[3] == Lexer.NUM:
-        #    op2 = int(c[3])
         op1 = self.get_pattern_value(1, c)
         op2 = self.get_pattern_value(3, c)
         #print(op1 == op2)
@@ -353,39 +358,6 @@ def convert(string):
             list[i]=1
     return list
 
-#исполнение строки
-def execute(row):
-    b = Lexer.parse(row)
-    c = row.split()
-    if b==[1,0,3]:
-        dict[c[0]].set(convert(c[2]))
-    elif b==[1,0,1]:
-        dict[c[0]].set(dict[c[2]].data)
-    elif b==[1,0,1,2,1]:
-        dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
-    #print("we do exec"+row)
-
-# def display(c):
-#     dict['РгВх'].display(0, 60, c, CANVAS_WIDTH)
-#     dict['РгА'].display(-80, 140, c, CANVAS_WIDTH)
-#     dict['РгБ'].display(80, 140, c, CANVAS_WIDTH)
-#     dict['СМ'].display(0, 220, c, CANVAS_WIDTH)
-#     dict['РгСМ'].display(0, 300, c, CANVAS_WIDTH)
-
-#шаг
-def step(e, rows, i):
-    rows = txt.get("1.0", END).splitlines()
-    if i.count<size:
-        pointer_canvas.move('pointer', 0, ROWHEIGHT)
-        execute(rows[i.count])
-        i.inc()
-        if mode == 1:
-            scheme_simple_display(scheme_canvas)
-        elif mode == 2:
-            scheme_struct_display(scheme_canvas)
-        #drawer_default_scheme()
-        #display(c)
-
 #сброс
 def reset(i):
     #pointer_canvas.delete('pointer')
@@ -410,7 +382,7 @@ def reset(i):
     #display(c)
 
 root = Tk()
-root.geometry('380x300') #размер окна
+root.geometry('480x900') #размер окна
 #вызов окна упрощённой схемы
 def scheme_simple():
     return tk.Toplevel(root)
@@ -507,25 +479,6 @@ for row in f:
         else:
             dict[name] = Counter(name)
 f.close()
-
-#рисование схемы со стрелочками и блоками
-# c = Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
-# c.pack(side=LEFT)
-# c.create_text((CANVAS_WIDTH/2)   ,  15, text='Шина', anchor=CENTER)
-# c.create_line((CANVAS_WIDTH/2)   ,  30, (CANVAS_WIDTH/2)   ,  55, arrow=LAST)
-# c.create_line((CANVAS_WIDTH/2)   , 105, (CANVAS_WIDTH/2)   , 120            )
-# c.create_line((CANVAS_WIDTH/2)-80, 120, (CANVAS_WIDTH/2)+80, 120            )
-# c.create_line((CANVAS_WIDTH/2)-80, 120, (CANVAS_WIDTH/2)-80, 140, arrow=LAST)
-# c.create_line((CANVAS_WIDTH/2)+80, 120, (CANVAS_WIDTH/2)+80, 140, arrow=LAST)
-# c.create_line((CANVAS_WIDTH/2)-80, 185, (CANVAS_WIDTH/2)-80, 210            )
-# c.create_line((CANVAS_WIDTH/2)-80, 210, (CANVAS_WIDTH/2)-35, 210            )
-# c.create_line((CANVAS_WIDTH/2)-35, 210, (CANVAS_WIDTH/2)-35, 235, arrow=LAST)
-# c.create_line((CANVAS_WIDTH/2)+80, 185, (CANVAS_WIDTH/2)+80, 210            )
-# c.create_line((CANVAS_WIDTH/2)+80, 210, (CANVAS_WIDTH/2)+35, 210            )
-# c.create_line((CANVAS_WIDTH/2)+35, 210, (CANVAS_WIDTH/2)+35, 235, arrow=LAST)
-# c.create_line((CANVAS_WIDTH/2)   , 270, (CANVAS_WIDTH/2)   , 300, arrow=LAST)
-# c.create_line(335, 65, 350, 65, arrow=LAST, tag='mark')
-# display(c)
 
 
 cc = classCounter() #счётчик
@@ -692,8 +645,8 @@ start_btn      .place(x=20, y=7)
 ROWHEIGHT = 18
 mainframe = Frame(root)
 scroll = Scrollbar(mainframe)
-pointer_canvas = Text(mainframe, width=5, height=10, bg='white',spacing1=2, yscrollcommand=scroll.set)
-txt = Text(mainframe, width=35, height=10, font="14", bg='white', yscrollcommand=scroll.set)
+pointer_canvas = Text(mainframe, width=5, height=45, bg='white',spacing1=2, yscrollcommand=scroll.set)
+txt = Text(mainframe, width=45, height=45, font="14", bg='white', yscrollcommand=scroll.set)
 #pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
 
 def OnMouseWheel(event):
