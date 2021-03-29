@@ -124,38 +124,26 @@ class Register:
 
     #рисование структурки
     def display_struct(self, x, y, c, wc):
-        # c.create_rectangle((wc/2)+x-(125/2), y+20, (wc/2)+x+(125/2), y+40, fill='white')
-        # xa = 0+(wc/2)+x-(145/2)
-        # xb = 10+(wc/2)+x-(145/2)
-        # dx = 15
-        # for i in self.data:
-        #     xa+=dx
-        #     xb+=dx
-        #     if i == 0:
-        #         c.create_oval(xa, 25+y, xb, 35+y, fill='white')
-        #     else:
-        #         c.create_oval(xa, 25+y, xb, 35+y, fill='red')
-        xa = -7
-        xb = -2
+        xa = 5
+        xb = 0
         ya = 15
         yb = 25
-        r = 0
+        count = 0
+        space = 2
         print(self.data)
         for i in self.data:
-            if r%4 != 0:
-                xa += 5
-                xb += 5
-                r += 1
-            else:
-                xa += 10
-                xb += 10
-                r += 1
+            xa += 5
+            xb += 5
+            if not count%8:
+                xa += space
+                xb += space
+            count += 1
             if i == 0:
                 c.create_rectangle(xa+x, ya+y, xb+x, yb+y, fill='white', tag='reg')
             else:
                 c.create_rectangle(xa+x, ya+y, xb+x, yb+y, fill='red', tag='reg')
         c.create_text(x+(xb/2), y+7, text=self.name, tag='reg')
-        c.create_rectangle(x-2, y-2, xb+x+5, yb+y+5, tag='reg')
+        c.create_rectangle(x-2, y-2, xb+x+12, yb+y+5, tag='reg')
 
     #рисование упрощённой схемы
     def display_simple(self, x, y, c, wc):
@@ -165,6 +153,7 @@ class Register:
         xb = 75
         dx = 5
         r = 0
+        space = 2
         #print(self.data)
         for i in self.data:
             if r%8 != 0:
@@ -172,8 +161,8 @@ class Register:
                 xb+=dx
                 r+=1
             else:
-                xa += dx+5
-                xb += dx+5
+                xa += dx+space
+                xb += dx+space
                 r+=1
             if i == 0:
                 c.create_rectangle(xa, 15+y, xb, 25+y, fill='white', tag='reg')

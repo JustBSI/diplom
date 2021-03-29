@@ -416,10 +416,9 @@ def scheme_struct():
     return tk.Toplevel(root)
 
 #рисование схемы по файлу
-def scheme_struct_display(c):
+def scheme_struct_display(c, file):
     c.delete('reg')
     c.pack(side=LEFT)
-    file = askopenfilename(filetypes=[("Text files", "*.txt")])
     for row in fileinput.input(file, openhook=fileinput.hook_encoded("utf-8")):
         string = re.split (' ', row)
         name = re.split ('\(', string[0])[0]
@@ -457,13 +456,15 @@ def scheme_simple_display(c):
 #окно
 
 def create_scheme_struct():
-    new_tk = scheme_simple()
     global scheme_canvas
     global mode
+    global draw_file
     mode = 2
     #elements = len(dict)
-    scheme_canvas = Canvas(new_tk, width=350, height=350, bg='white')
-    scheme_struct_display(scheme_canvas)
+    draw_file = askopenfilename(filetypes=[("Text files", "*.txt")])
+    new_tk = scheme_simple()
+    scheme_canvas = Canvas(new_tk, width=450, height=350, bg='white')
+    scheme_struct_display(scheme_canvas, draw_file)
 
 def create_scheme_simple():
     new_tk = scheme_simple()
@@ -554,7 +555,7 @@ def step_inside(e):
         if mode == 1:
             scheme_simple_display(scheme_canvas)
         elif mode == 2:
-            scheme_struct_display(scheme_canvas)
+            scheme_struct_display(scheme_canvas, draw_file)
     else:
         #pointer_canvas.delete('pointer')
         reset(cc)
@@ -575,7 +576,7 @@ def step_outside(e):
         if mode == 1:
             scheme_simple_display(scheme_canvas)
         elif mode == 2:
-            scheme_struct_display(scheme_canvas)
+            scheme_struct_display(scheme_canvas, draw_file)
     else:
         #pointer_canvas.delete('pointer')
         reset(cc)
@@ -596,7 +597,7 @@ def step_bypass(e):
         if mode == 1:
             scheme_simple_display(scheme_canvas)
         elif mode == 2:
-            scheme_struct_display(scheme_canvas)
+            scheme_struct_display(scheme_canvas, draw_file)
     else:
         #pointer_canvas.delete('pointer')
         reset(cc)
