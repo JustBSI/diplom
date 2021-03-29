@@ -1,5 +1,11 @@
 from tkinter import *
-from numpy import invert
+
+def invert(data):
+    res = [1]*len(data)
+    for i in range(len(data)):
+        if data[i]:
+            res[i] = 0
+    return res
 
 class Trigger:
 
@@ -65,31 +71,55 @@ class Register:
                 count += 1
             return res
 
-    def get(self, slice=None, invert=False):
+    def get(self, slice=None, inv=False):
+        if not slice:
+            return invert(self.data) if inv else self.data
         if ':' not in slice:
-            return self.data[int(slice.strip())]
+            return invert(self.data[int(slice.strip())]) if inv else self.data[int(slice.strip())]
         else:
             v = slice.strip().split(':')
-            return self.data[int(v[0]):int(v[1])]
+            print(invert(self.data[int(v[0]):int(v[1])+1]))
+            print(self.data[int(v[0]):int(v[1])+1])
+            return invert(self.data[int(v[0]):int(v[1])+1]) if inv else self.data[int(v[0]):int(v[1])+1]
 
     def set(self, data, slice=None):
-        if type(data).__name__=='str':
+        #if type(data).__name__=='str':
+        #    if not slice:
+        #        for i in range(len(data)):
+        #            self.data[i] = int(data[i])
+        #    elif ':' not in slice:
+        #        self.data[int(slice.strip())] = int(data)
+        #    else:
+        #        count = 0
+        #        v = slice.strip().split(':')
+        #        for bit in self.data[int(v[0]):int(v[1])+1]:
+        #            self.data[int(v[0])+count] = int(data[count])
+        #            count += 1
+        #elif type(data).__name__=='list':
+        #    if not slice:
+        #        count = 0
+        #        for bit in self.data:
+        #            self.data[count] = data[count]
+        #            count += 1
+        #    elif ':' not in slice:
+        #        self.data[int(slice.strip())] = int(data)
+        #    else:
+        #        count = 0
+        #        v = slice.strip().split(':')
+        #        for bit in self.data[int(v[0]):int(v[1])+1]:
+        #            self.data[int(v[0])+count] = data[count]
+        #            count += 1
+        if not slice:
             for i in range(len(data)):
                 self.data[i] = int(data[i])
-        elif type(data).__name__=='list':
-            if not slice:
-                count = 0
-                for bit in self.data:
-                    self.data[count] = data[count]
-                    count += 1
-            elif ':' not in slice:
-                self.data[int(slice.strip())] = int(data)
-            else:
-                count = 0
-                v = slice.strip().split(':')
-                for bit in self.data[int(v[0]):int(v[1])]:
-                    self.data[int(v[0])+count] = data[count]
-                    count += 1
+        elif ':' not in slice:
+            self.data[int(slice.strip())] = int(data)
+        else:
+            count = 0
+            v = slice.strip().split(':')
+            for bit in self.data[int(v[0]):int(v[1])+1]:
+                self.data[int(v[0])+count] = int(data[count])
+                count += 1
 
 
     #рисование структурки
@@ -137,7 +167,7 @@ class Register:
         r = 0
         #print(self.data)
         for i in self.data:
-            if r%4 != 0:
+            if r%8 != 0:
                 xa+=dx
                 xb+=dx
                 r+=1
@@ -192,11 +222,14 @@ class Adder:
         self.name=name
 
     def add(self,a,b,carry_in):
+        #print(a)
+        #print(b)
         if len(a)==self.length and len(b)==self.length:
             c=[0]*self.length
             carry=carry_in
             for i in reversed(range(self.length)):
-                c[i]=(a[i]+b[i]+carry)%2
+                #c[i]=(a[i]+b[i]+carry)%2
+                c[i]=a[i]^b[i]^carry
                 carry=1 if (a[i]+b[i]+carry)>1 else 0
                 if i==1:
                     overflow=carry
@@ -211,7 +244,7 @@ class Adder:
         #print (x)
 
     def display_simple(self, x, y, c, wc):
-        print(" ")
+        c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
 
     def reset(self):
         i=0

@@ -206,38 +206,57 @@ class Node:
         if hasattr(self, "next"):
             self.next.display(indent)
 
+    @staticmethod
+    def pure_name(word):
+        res = word.strip()
+        if res[0] == '-':
+            res = res[1:]
+        if '[' in res:
+            res = res.split('[')[0]
+        return res
+
+    @staticmethod
+    def pure_slice(word):
+        if '[' in word:
+            #s = word.split('[')[1].split(']')[0].strip()
+            #ss = s.split(':')
+            #return int(ss[0]), int(ss[1]), s
+            return word.split('[')[1].split(']')[0].strip()
+        return None
+
+
+    @staticmethod
+    def set_elem(elem, val):
+        if '[' in elem:
+            #f, t, s = Node.pure_slice(elem)
+            dict[Node.pure_name(elem)].set(val, Node.pure_slice(elem))
+        else:
+            dict[Node.pure_name(elem)].set(val)
+
+
+    @staticmethod
+    def get_elem(elem):
+        if '[' in elem:
+            #f, t, s = Node.pure_slice(elem)
+            return dict[Node.pure_name(elem)].get(slice=Node.pure_slice(elem), inv=elem[0]=='-')
+        else:
+            return dict[Node.pure_name(elem)].get(inv=elem[0]=='-')
+
+
     # исполнение
     @property
     def execute(self):
         c = self.raw.split()
         p = self.pattern
-        #if   self.pattern == [1, 0, 3]:
-        #    dict[c[0]].set(c[2])
-        #elif self.pattern == [1, 0, 1]:
-        #    dict[c[0]].set(dict[c[2]].data)
-        #elif self.pattern == [1, 0, 1, 2, 1]:
-        #    dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 0)[0])
-        #elif self.pattern == [1, 0, 1, 2, 3]:
-        #    if type(dict[c[2]]).__name__ == 'Counter':
-        #        dict[c[2]].count += int(c[4])
-        #elif self.pattern == [1, 0, 1, 14, 3]:
-        #    if type(dict[c[2]]).__name__ == 'Register':
-        #        new_data = [0]+dict[c[2]].data[:-1]
-        #        for i in range(len(new_data)):
-        #            dict[c[0]].data[i] = new_data[i]
-        #elif self.pattern == [1, 0, 1, 15, 3]:
-        #    if type(dict[c[2]]).__name__ == 'Register':
-        #        new_data = dict[c[2]].data[1:]
-        #        new_data.append(0)
-        #        for i in range(len(new_data)):
-        #            dict[c[0]].data[i] = new_data[i]
         if p[1] == 0: # если это инструкция присвоения :=
             if p[0] == 1: # если слева элемент
                 if   len(p) == 3:
                     if   p[2] == 3: # если справа значение
-                        dict[c[0]].set(c[2])
+                        #dict[c[0]].set(c[2])
+                        Node.set_elem(c[0], c[2])
                     elif p[2] == 1: # если справа элемент
-                        dict[c[0]].set(dict[c[2]].data)
+                        #dict[c[0]].set(dict[c[2]].data)
+                        Node.set_elem(c[0], Node.get_elem(c[2]))
                 elif len(p) == 5:
                     if p[3] == 2: # если справа сложение
                         if p[2] == 1: # если первый операнд элемент
@@ -257,6 +276,9 @@ class Node:
                             new_data.append(0)
                             for i in range(len(new_data)):
                                 dict[c[0]].data[i] = new_data[i]
+                elif len(p) == 7:
+                    #print(dict[c[2]]).data
+                    dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 1)[0])
         elif p[0] == Lexer.IF:
             return self.condition()
         elif p[0] == Lexer.WHILE:
@@ -448,8 +470,15 @@ def create_scheme_simple():
     global scheme_canvas
     global mode
     mode = 1
-    elements = len(dict)
-    scheme_canvas = Canvas(new_tk, width=150, height=elements*20, bg='white')
+    w = 1
+    for d in dict:
+        if type(dict[d]).__name__ == 'Register':
+            if len(dict[d].data) > w:
+                w = len(dict[d].data)
+    w *= 6
+    w += 100
+    h = len(dict)*20+30
+    scheme_canvas = Canvas(new_tk, width=w, height=h, bg='white')
     scheme_simple_display(scheme_canvas)
 
 
@@ -458,7 +487,9 @@ def create_scheme_simple():
 #    start.display()
 
 #анализ элементной базы
-f = open('elements.txt','r',encoding='utf-8')
+#ARCH = 'elements.txt'
+ARCH = 'sub_m32_imm8.arch.txt'
+f = open(ARCH,'r',encoding='utf-8')
 for row in f:
     if   'Регистр'  in row:
         string     = re.split (' ', row)
