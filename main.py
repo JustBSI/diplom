@@ -424,14 +424,14 @@ def scheme_struct_display(c, file):
         name = re.split ('\(', string[0])[0]
         coords = re.split('\,', string[1])
         if 'Линия' in name:
-            print('Линия')
+            #print('Линия')
             xa = re.findall(r'\d+', coords[0])
             ya = re.findall(r'\d+', coords[1])
             xb = re.findall(r'\d+', coords[2])
             yb = re.findall(r'\d+', coords[3])
             c.create_line(xa, ya, xb, yb, tag='reg')
         elif 'Стрелка' in name:
-            print('Стрелка')
+            #print('Стрелка')
             xa = re.findall(r'\d+', coords[0])
             ya = re.findall(r'\d+', coords[1])
             xb = re.findall(r'\d+', coords[2])
@@ -441,13 +441,11 @@ def scheme_struct_display(c, file):
             size = 6
             x = int(re.findall(r'\d+', coords[0])[0])
             y = int(re.findall(r'\d+', coords[1])[0])
-            print(x)
-            print(y)
             c.create_oval(x-size/2, y-size/2, x+size/2, y+size/2, outline="#000", fill="#fff", width=2)
         else:
             x = re.findall(r'\d+', coords[0])
             y = re.findall(r'\d+', coords[1])
-            print (x,y)
+            #print (x,y)
             if name in dict:
                 dict[name].display_struct(int(x[0]), int(y[0]), c, CANVAS_WIDTH)
 
@@ -469,8 +467,18 @@ def create_scheme_struct():
     mode = 2
     #elements = len(dict)
     draw_file = askopenfilename(filetypes=[("Text files", "*.txt")])
+    print(draw_file)
+    #print(fileinput.input(draw_file, openhook=fileinput.hook_encoded("utf-8"))[0])
+    w = 450
+    h = 350
+    with open(draw_file, 'r', encoding="utf-8") as f:
+        for row in f:
+            if 'Размер' in row:
+                arguments = row.split()[1].split(',')
+                w = int(re.findall(r'\d+', arguments[0])[0])
+                h = int(re.findall(r'\d+', arguments[1])[0])
     new_tk = scheme_simple()
-    scheme_canvas = Canvas(new_tk, width=450, height=350, bg='white')
+    scheme_canvas = Canvas(new_tk, width=w, height=h, bg='white')
     scheme_struct_display(scheme_canvas, draw_file)
 
 def create_scheme_simple():
