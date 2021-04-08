@@ -437,6 +437,13 @@ def scheme_struct_display(c, file):
             xb = re.findall(r'\d+', coords[2])
             yb = re.findall(r'\d+', coords[3])
             c.create_line(xa, ya, xb, yb, tag='reg', arrow=LAST)
+        elif 'Инверсия' in name:
+            size = 6
+            x = int(re.findall(r'\d+', coords[0])[0])
+            y = int(re.findall(r'\d+', coords[1])[0])
+            print(x)
+            print(y)
+            c.create_oval(x-size/2, y-size/2, x+size/2, y+size/2, outline="#000", fill="#fff", width=2)
         else:
             x = re.findall(r'\d+', coords[0])
             y = re.findall(r'\d+', coords[1])
