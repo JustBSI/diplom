@@ -80,19 +80,19 @@ class Node:
         while i < len(rows): # перебор по строкам кода
             if not rows[i].strip(): # если строка пустая
                 i += 1 # сдвигаем маркер
-            elif rows[i][0:4]!="    ": # если находим сдвиг (таб)
-                current.next = Node(rows[i], out, bias+i)
-                current = current.next
-                current.rownum = bias+i
-                i += 1
-            else: # если нет сдвига, значит это всё ещё тот же уровень
+            elif rows[i][0:4]!="    ": # если нет сдвига, значит это всё ещё тот же уровень
+                current.next = Node(rows[i], out, bias+i) # создаём ссылку на следующий узел
+                current = current.next # переходим на него
+                current.rownum = bias+i # высчитывание глобальной строки
+                i += 1 # сдвигаем маркер
+            else: # если находим сдвиг (таб)
                 inside_rows = [] # строку закидываем в массив внутренних строк
                 while i<len(rows) and rows[i][0:4]=="    ": # пока сдвиг есть
                     inside_rows.append(rows[i][4:]) # добавлять строки в массив уровня
-                    i += 1
-                current.inside = Node.parse(inside_rows, current, i-len(inside_rows)+bias)
+                    i += 1 # сдвигаем маркер
+                current.inside = Node.parse(inside_rows, current, i-len(inside_rows)+bias) # ссылка на первый узел внутреннего уровня
 
-        return first.next
+        return first.next # возвращает текущий узел
 
     def step(self): # функция шага
         if self.type == Node.ACT: # если узел -- это действие

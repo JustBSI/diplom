@@ -1,13 +1,13 @@
 from tkinter import *
 
-def invert(data):
+def invert(data): # функция инвертирования
     res = [1]*len(data)
     for i in range(len(data)):
         if data[i]:
             res[i] = 0
     return res
 
-class Trigger:
+class Trigger: # триггер
 
     def __init__(self, name):
         self.sign=0
@@ -20,7 +20,7 @@ class Trigger:
         self.sign=0
 
 
-class Register:
+class Register: # регистр
 
     def __init__(self, n, name):
         self.data=[0]*n
@@ -39,15 +39,15 @@ class Register:
     #            current /= 2
     #        self.data.reverse()
 
-    def reset(self):
+    def reset(self): # функция сброса (очистки) регистра
         for i in range(len(self.data)):
             self.data[i]=0
 
-    def value(self, slice=None):
+    def value(self, slice=None): # функция получения значения регистра
         if slice and ':' not in slice:
             return self.data[int(slice.strip())]
         else:
-            if slice:
+            if slice: # если срез
                 v = slice.strip().split(':')
                 d = self.data[int(v[0]):int(v[1])]
             else:
