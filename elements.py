@@ -1,6 +1,6 @@
 from tkinter import *
 
-def invert(data): # функция инвертирования
+def invert(data): # инвертирование
     res = [1]*len(data)
     for i in range(len(data)):
         if data[i]:
@@ -39,12 +39,12 @@ class Register: # регистр
     #            current /= 2
     #        self.data.reverse()
 
-    def reset(self): # функция сброса (очистки) регистра
+    def reset(self): # сброс (очистка) регистра
         for i in range(len(self.data)):
             self.data[i]=0
 
-    def value(self, slice=None): # функция получения значения регистра
-        if slice and ':' not in slice:
+    def value(self, slice=None): # получение значения регистра
+        if slice and ':' not in slice: # если один разряд
             return self.data[int(slice.strip())]
         else:
             if slice: # если срез
@@ -122,8 +122,7 @@ class Register: # регистр
                 count += 1
 
 
-    #рисование структурки
-    def display_struct(self, x, y, c, wc):
+    def display_struct(self, x, y, c, wc): # рисование структурки
         xa = 5
         xb = 0
         ya = 15
@@ -145,8 +144,8 @@ class Register: # регистр
         c.create_text(x+(xb/2), y+7, text=self.name, tag='reg')
         c.create_rectangle(x-2, y-2, xb+x+12, yb+y+5, tag='reg')
 
-    #рисование упрощённой схемы
-    def display_simple(self, x, y, c, wc):
+
+    def display_simple(self, x, y, c, wc): # рисование упрощённой схемы
         c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
         #c.create_rectangle(x+70, y+10, (wc/2)+x+(125/2), y+30, fill='white')
         xa = 70
@@ -170,14 +169,14 @@ class Register: # регистр
                 c.create_rectangle(xa, 15+y, xb, 25+y, fill='red', tag='reg')
 
 
-class Counter:
+class Counter: # счётчик
 
     def __init__(self, name, limit=None):
         self.name = name
         self.limit = limit
         self.count = 0
 
-    def inc(self):
+    def inc(self): # инкрементирование
         if self.limit:
             if self.count < self.limit:
                 self.count += 1
@@ -186,36 +185,36 @@ class Counter:
         else:
             self.count += 1
 
-    def set(self, data):
+    def set(self, data): # установка значения
         self.count = int(data)
 
-    def reset(self):
+    def reset(self): # сброс
         self.count = 0
 
-    def value(self):
+    def value(self): # получить значение
         return self.count
 
-    def display(self, x, y, c, wc):
+    def display(self, x, y, c, wc): # показ на структурной схеме
         c.create_text((x + wc) / 2, y + 10, text=self.count, anchor=CENTER)
         c.create_rectangle(60, 0, 74, 14)
 
-    def display_simple(self, x, y, c, wc):
+    def display_simple(self, x, y, c, wc): # показ на простой схеме
         c.create_text(x+20, y, text=self.name, anchor=W, tag='reg')
         c.create_text(x+70, y, text=str(self.count), anchor=W, tag='reg')
 
 
-class Adder:
+class Adder: # сумматор
 
     def __init__(self,n,name):
         self.length=n
         self.name=name
 
-    def add(self,a,b,carry_in):
+    def add(self,a,b,carry_in): # сложение
         #print(a)
         #print(b)
-        if len(a)==self.length and len(b)==self.length:
-            c=[0]*self.length
-            carry=carry_in
+        if len(a)==self.length and len(b)==self.length: # если длина операндов и сумматора одинаковые
+            c=[0]*self.length # результат
+            carry=carry_in # перенос
             for i in reversed(range(self.length)):
                 #c[i]=(a[i]+b[i]+carry)%2
                 c[i]=a[i]^b[i]^carry
@@ -226,14 +225,14 @@ class Adder:
                     overflow=overflow^carry
             return(c,carry,overflow)
 
-    #рисование элемента на структурке
-    def display_struct(self, x, y, c, wc):
+
+    def display_struct(self, x, y, c, wc): # рисование сумматора на структурктурной схеме
         c.create_text((wc/2)+x,y+10,text=self.name, anchor=CENTER)
         c.create_polygon(x+((wc/2)-50), y+20, x+40+((wc/2)-50), y+20, x+50+((wc/2)-50), y+30, x+60+((wc/2)-50), y+20, x+100+((wc/2)-50), y+20, x+80+((wc/2)-50), y+43, x+20+((wc/2)-50), y+43, outline='black', fill='white')
         #print (x)
 
-    def display_simple(self, x, y, c, wc):
+    def display_simple(self, x, y, c, wc): # рисование сумматора на простой схеме
         c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
 
-    def reset(self):
+    def reset(self): # сброс
         i=0

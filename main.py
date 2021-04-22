@@ -8,10 +8,9 @@ import tkinter as tk
 
 dict = {} # словарь с элементами
 
-# Лексический анализ кода
-class Lexer:
+
+class Lexer: # лексический анализ кода
     # типы слов в строках
-    words = ['ASSIG', 'ELEM', 'ADD', 'NUM', 'IF', 'ELSE', 'WHILE', 'EQU', 'MORE', 'LESS', 'NOT_EQU', 'MORE_EQU', 'LESS_EQU']
     # объявление кортежа (каждому типу слов свой номер)
     ASSIG, ELEM, ADD, NUM, IF, ELSE, WHILE, EQU, MORE, LESS, NOT_EQU, MORE_EQU, LESS_EQU, ELEM_SLICE, RIGHT_SHIFT, LEFT_SHIFT = range(16)
     # типы операций и их обозначения
@@ -20,7 +19,7 @@ class Lexer:
     keywords = {'если': IF, 'иначе': ELSE, 'пока': WHILE}
 
     @classmethod # метод класса, который вызывается без создания экземпляра класса
-    def is_elem(cls, word): # проверка, является ли слово в строке элементом
+    def is_elem(cls, word): # проверка, является ли кусок строки элементом
         w = word
         if w[0] == '-':
             w = w[1:] # убираем минус
@@ -34,9 +33,9 @@ class Lexer:
         string = row.split()
         result = []
         for word in string:
-            if   self.is_elem(word):
-                result.append(self.ELEM)
-            elif word.split('[')[0] in dict.keys():
+            if   self.is_elem(word): # если это элемент
+                result.append(self.ELEM) # то добавляем его в макет
+            elif word.split('[')[0] in dict.keys(): #
                 result.append(self.ELEM_SLICE)
             elif word in self.keywords.keys():
                 result.append(self.keywords[word])
@@ -47,9 +46,9 @@ class Lexer:
                 result.append(self.NUM)
         return result # возвращает макет строки
 
-# управление узлами. Узлом является абстрактная модель, представляющая исполняемую инструкцию и возможные переходы к другим инструкциям.
-class Node:
 
+class Node: # управление узлами. Узлом является абстрактная модель,
+            # представляющая исполняемую инструкцию и возможные переходы к другим инструкциям.
     # типы узлов
     types = ['ACT', 'IF', 'ELSE', 'WHILE']
     ACT, IF, ELSE, WHILE = range(4)
@@ -59,7 +58,7 @@ class Node:
             self.row     = row # рассматриваемая сырая строка из кода: РгА := РгА + 1
             self.pattern = Lexer.parse(row) # передаём паттерну полученную пропарсенную лексером строку: [1, 0, 1, 2, 3]
             if Lexer.IF in self.pattern: # если паттерн содержит 4 (IF), то значит строка содержит условие
-                self.type = Node.IF
+                self.type = Node.IF # присваиваем этому узлу тип if
             elif Lexer.ELSE in self.pattern:
                 self.type = Node.ELSE
             elif Lexer.WHILE in self.pattern:
@@ -72,7 +71,7 @@ class Node:
             self.rownum = rownum # номер рассматриваемой строки, нужен для маркера
 
     @staticmethod # метод класса, который ...
-    def parse(rows, out=None, bias=0): #
+    def parse(rows, out=None, bias=0): # парсит строки по узлам и уровням (bias -- это смещение маркера)
 
         current = Node()
         first = current
@@ -94,109 +93,108 @@ class Node:
 
         return first.next # возвращает текущий узел
 
-    def step(self): # функция шага
+    def step(self): # шаг с обходом
         if self.type == Node.ACT: # если узел -- это действие
             self.execute # выполнять
-            return self.find_next()
+            return self.find_next() # ищет следующий узел
         elif self.type == Node.IF: # если узел -- это условие
-            if self.execute:
-                self.inside.execute_all()
-                if hasattr(self, "next"):
-                    if self.next.type == Node.ELSE:
-                        return self.next.find_next()
+            if self.execute: # проверка выполнения условия (true или false)
+                self.inside.execute_all() # выполняет все узлы уровня
+                if hasattr(self, "next"): # проверка есть ли у узла ссылка на следующий
+                    if self.next.type == Node.ELSE: # если тип следующего узла "если"
+                        return self.next.find_next() # ищем следующий следующего
                     else:
-                        return self.next
+                        return self.next # возвращает ссылку на следующий узел
                 else:
-                    return self.find_out()
-            else:
-                if hasattr(self, "next"):
-                    if self.next.type == Node.ELSE:
-                        self.next.inside.execute_all()
-                        return self.next.find_next()
+                    return self.find_out() # возвращает ссылку на узел внешнего уровня
+            else: # если условие не выполняется
+                if hasattr(self, "next"): # проверка есть ли у узла ссылка на следующий
+                    if self.next.type == Node.ELSE: # если тип следующего узла "если"
+                        self.next.inside.execute_all() # выполняет все узлы уровня
+                        return self.next.find_next() # возвращает ссылку на следующий узел следующего узла
                     else:
-                        return self.next
+                        return self.next # возвращает ссылку на следующий узел
                 else:
-                    return self.find_out()
-        elif self.type == Node.WHILE:
-            while self.execute:
-                self.inside.execute_all()
-            return self.find_next()
+                    return self.find_out() # возвращает ссылку на узел внешнего уровня
+        elif self.type == Node.WHILE: # если узел -- это "пока"
+            while self.execute: # пока выполняется уловие
+                self.inside.execute_all() # выполнит все узлы уровня
+            return self.find_next() # возвращает ссылку на слдующий уровень
         else:
             print("Ошибка: недопустимый тип узла -- " + Node.types[self.type])
             return None
 
-    def step_inside(self): # функция
-        if self.type == Node.ACT:
-            self.execute
-            return self.find_next()
-        elif self.type == Node.IF:
-            if self.execute:
-                return self.inside
-            else:
-                if hasattr(self, "next"):
-                    if self.next.type == Node.ELSE:
-                        return self.next.inside
-                    else:
-                        return self.next
-                else:
-                    return self.find_out()
-        elif self.type == Node.WHILE:
-            if self.execute:
-                return self.inside
-            else:
-                return self.find_next()
+    def step_inside(self): # шаг с заходом
+        if self.type == Node.ACT: # если узел -- это действие
+            self.execute # выполнить
+            return self.find_next() # вернуть ссылку на следующий
+        elif self.type == Node.IF: # если узел -- условие
+            if self.execute: # если выполняется условие
+                return self.inside # ссылка на первый узел тела цикла
+            else: # если условие не выполняется
+                if hasattr(self, "next"): # если у узла есть ссылка на следующий
+                    if self.next.type == Node.ELSE: # если следующий узел -- это else
+                        return self.next.inside # ссылка на тело else
+                    else: # если это не else
+                        return self.next # ссылка на следующий узел
+                else: # если ссылки на следующий узел нет
+                    return self.find_out() # ссылка на внешний уровень
+        elif self.type == Node.WHILE: # если узел -- while
+            if self.execute: # если выполняется условие
+                return self.inside # ссылка на первый узел тела цикла
+            else: # если условие не выполняется
+                return self.find_next() # вернуть ссылку на следующий
         else:
             print("Ошибка: недопустимый тип узла -- " + Node.types[self.type])
             return None
 
 
-    def step_outside(self): # функция шага с выходом
-        last = self.execute_all()
-        current = last.find_out()
-        if current.type==Node.WHILE and last.out is current:
-            while current.execute:
-                current.inside.execute_all()
-            return current.find_next()
-        else:
-            return current
+    def step_outside(self): # шаг с выходом
+        last = self.execute_all() # довыполняем всё до внешнего уровня
+        current = last.find_out() # ссылка на узел где окажемся после выполения тела
+        if current.type==Node.WHILE and last.out is current: # чтобы не проскочить возможный следущий while
+            while current.execute: # пока выполняется условие
+                current.inside.execute_all() # выполняем тело
+            return current.find_next() # ссылка на следующий узел внешнего уровня
+        else: # если это не while
+            return current # ссылка на узел, в который попали
 
 
+    def find_next(self): # ищет ссылку на следующий узел
+        if hasattr(self, "next"): # если есть ссылка на следующий узел
+            return self.next # ссылка на следующий узел
+        else: # если ссылки на следующий нет
+            return self.find_out() # ссылка на внешний узел
 
-    def find_next(self):
-        if hasattr(self, "next"):
-            return self.next
-        else:
-            return self.find_out()
 
-
-    def find_out(self):
-        if hasattr(self, "out"):
-            if self.out.type == Node.WHILE:
-                return self.out
-            elif self.out.type == Node.IF:
-                if hasattr(self.out, "next"):
-                    if self.out.next.type == Node.ELSE:
-                        if hasattr(self.out.next, "next"):
-                            return self.out.next.next
-                        else:
-                            return self.out.next.find_out()
-                    else:
-                        return self.out.next
-                else:
-                    return self.out.find_out()
-            elif self.out.type == Node.ELSE:
-                if hasattr(self.out, "next"):
-                    return self.out.next
-                else:
-                    return self.out.find_out()
+    def find_out(self): # ищет ссылку на внешний узел
+        if hasattr(self, "out"): # если есть ссылка на внешний узел
+            if self.out.type == Node.WHILE: # и если этот узел -- while
+                return self.out # ссылка на тело while
+            elif self.out.type == Node.IF: # если этот узел -- if
+                if hasattr(self.out, "next"): # если у внешнего есть ссылка на следующий
+                    if self.out.next.type == Node.ELSE: # и если это else
+                        if hasattr(self.out.next, "next"): # если есть узел за else
+                            return self.out.next.next # ссылка на следущий за else узел
+                        else: # если за else на этом уровне ничего нет
+                            return self.out.next.find_out() # ссылка на внешний уровень
+                    else: # если это не else
+                        return self.out.next # ссылка на вншний узел
+                else: # если за if ничего нет
+                    return self.out.find_out() # ссылка на внешний узел
+            elif self.out.type == Node.ELSE: # если это else
+                if hasattr(self.out, "next"): # и если у него есть ссылка на следующий
+                    return self.out.next # ссылка на него
+                else: # если следующего нет
+                    return self.out.find_out() # ссылка на внешний
             else:
                 print("Ошибка: недопустимый тип узла -- " + Node.types[self.out.type])
                 return None
-        else:
+        else: # если внешнего узла нет
             return None
 
 
-    def display(self, indent=0): # функция для отображения макета кода в консоли
+    def display(self, indent=0): # функция для отображения макета кода в консоли (для отладки)
         ans = ''
         try:
             print(str(self.rownum)+' '+'| '*indent+Node.types[self.type]+' '+self.row+' '+str(self.pattern)+' '+str(hasattr(self, "next")))
@@ -210,7 +208,7 @@ class Node:
             self.next.display(indent)
 
     @staticmethod
-    def pure_name(word): # функция выцепляет название элемента из слова
+    def pure_name(word): # выцепляет название элемента из слова
         res = word.strip() # делит по пробелам
         if res[0] == '-': # отбрасывает минус
             res = res[1:]
@@ -221,26 +219,21 @@ class Node:
     @staticmethod
     def pure_slice(word): # функция получает диапазон среза из кода (если есть)
         if '[' in word:
-            #s = word.split('[')[1].split(']')[0].strip()
-            #ss = s.split(':')
-            #return int(ss[0]), int(ss[1]), s
             return word.split('[')[1].split(']')[0].strip()
         return None
 
 
     @staticmethod
-    def set_elem(elem, val): # функция установки значения элемента
+    def set_elem(elem, val): # установка значения элемента
         if '[' in elem: # если срез
-            #f, t, s = Node.pure_slice(elem)
             dict[Node.pure_name(elem)].set(val, Node.pure_slice(elem))
         else: # если просто значение
             dict[Node.pure_name(elem)].set(val)
 
 
     @staticmethod
-    def get_elem(elem): # функция получает значение элемента
+    def get_elem(elem): # получает значение элемента
         if '[' in elem: # если срез
-            #f, t, s = Node.pure_slice(elem)
             return dict[Node.pure_name(elem)].get(slice=Node.pure_slice(elem), inv=elem[0]=='-')
         else: # если просто значение
             return dict[Node.pure_name(elem)].get(inv=elem[0]=='-')
@@ -255,10 +248,8 @@ class Node:
             if p[0] == 1: # если слева элемент
                 if   len(p) == 3: # проверка на правильность операции (РгА := 1)
                     if   p[2] == 3: # если справа значение
-                        #dict[c[0]].set(c[2])
                         Node.set_elem(c[0], c[2]) # присваивает значение переменной
                     elif p[2] == 1: # если справа элемент
-                        #dict[c[0]].set(dict[c[2]].data)
                         Node.set_elem(c[0], Node.get_elem(c[2])) # присваивает переменной значение другой переменной
                 elif len(p) == 5: # если строка вида РгА := РгБ + 1
                     if p[3] == 2: # если это сложение
@@ -270,74 +261,74 @@ class Node:
                                     dict[c[2]].count += int(c[4]) # увеличить счётчик на значение
                     elif p[3] == 14: # если сдвиг вправо
                         if type(dict[c[2]]).__name__ == 'Register': # если слева регистр
-                            new_data = [0]+dict[c[2]].data[:-1]
-                            for i in range(len(new_data)):
+                            new_data = [0]+dict[c[2]].data[:-1] # формируется новое значение
+                            for i in range(len(new_data)): # записываем результат в регистр
                                 dict[c[0]].data[i] = new_data[i]
                     elif p[3] == 15: # если сдвиг влево
                         if type(dict[c[2]]).__name__ == 'Register': # если слева регистр
-                            new_data = dict[c[2]].data[1:]
-                            new_data.append(0)
-                            for i in range(len(new_data)):
+                            new_data = dict[c[2]].data[1:] # формируется новое значение
+                            new_data.append(0) # дописываем в правово края ноль
+                            for i in range(len(new_data)): # записываем результат в регистр
                                 dict[c[0]].data[i] = new_data[i]
                 elif len(p) == 7:
                     #print(dict[c[2]]).data
                     dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 1)[0])
         elif p[0] == Lexer.IF: # если строка содержит условие
-            return self.condition()
+            return self.condition() # вернуть результат
         elif p[0] == Lexer.WHILE: # если строка содержит цикл
-            return self.condition()
+            return self.condition() # вернуть результат
         #else:
             #print('nothing was done')
 
-    def execute_all(self): # функция для выполнения всего
+    def execute_all(self): # выполнение всего уровня
         current = self
-        while hasattr(current, "next"):
-            if current.type == Node.ACT:
-                current.execute
-                current = current.next
-            elif current.type == Node.IF:
-                if current.execute:
-                    current.inside.execute_all()
-                    if current.next.type == Node.ELSE:
-                        if hasattr(current.next, "next"):
-                            current = current.next.next
-                    else:
-                        current = current.next
-                else:
-                    current = current.next
-                    if current.type == Node.ELSE:
-                        current.inside.execute_all()
-                        if hasattr(current, "next"):
-                            current = current.next
-            elif current.type == Node.WHILE:
-                while current.execute:
-                    current.inside.execute_all()
-                current = current.next
+        while hasattr(current, "next"): # пока у текущего есть ссылка на следующий
+            if current.type == Node.ACT: # и если текущий -- это действие
+                current.execute # выполнить
+                current = current.next # взять ссылку на следующий
+            elif current.type == Node.IF: # если текущий -- if
+                if current.execute: # и если выполняется условие
+                    current.inside.execute_all() # выполнить тело if
+                    if current.next.type == Node.ELSE: # если следующий -- это else
+                        if hasattr(current.next, "next"): # если у него есть тело
+                            current = current.next.next # выход на внешний уровень
+                    else: # если else нет
+                        current = current.next # следующий узел
+                else: # если условие не выполняется
+                    current = current.next # переход на следующий узел
+                    if current.type == Node.ELSE: # если это else
+                        current.inside.execute_all() # выполнить тело else
+                        if hasattr(current, "next"): # если после него есть узел
+                            current = current.next # взять ссылку на следующий
+            elif current.type == Node.WHILE: # если это while
+                while current.execute: # пока выполняется условие
+                    current.inside.execute_all() # выполнить тело
+                current = current.next # взять ссылку на следующий
             else:
                 print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
-        if current.type == Node.ACT:
-            current.execute
-        elif current.type == Node.IF:
-            if current.execute:
-                current.inside.execute_all()
-        elif current.type == Node.WHILE:
-            while current.execute:
-                current.inside.execute_all()
+        if current.type == Node.ACT: # если это действие
+            current.execute # выполнить
+        elif current.type == Node.IF: # если это условие
+            if current.execute: # если условие выполняется
+                current.inside.execute_all() # выполнить тело
+        elif current.type == Node.WHILE: # если это while
+            while current.execute: # пока выполняется условие
+                current.inside.execute_all() # выполнить тело
         else:
             print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
         return current
 
-    def get_pattern_value(self, num, c):
-        if    self.pattern[num] == Lexer.ELEM:
-            if '[' in c[num]:
-                return dict[c[num].split('[')[0]].value(c[num].split('[')[1].split(']')[0].strip())
-            else:
-                return dict[c[num]].value()
-        elif  self.pattern[num] == Lexer.ELEM_SLICE:
-            v = c[num].split('[')
-            return dict[v[0]].slice_value(v[1][:-1].strip())
-        elif  self.pattern[num] == Lexer.NUM:
-            return int(c[num])
+    def get_pattern_value(self, num, c): # получает значение элемента по паттерну
+        if    self.pattern[num] == Lexer.ELEM: # если слева элемент
+            if '[' in c[num]: # если есть указатель на конкретный разряд
+                return dict[c[num].split('[')[0]].value(c[num].split('[')[1].split(']')[0].strip()) # вернуть значение
+            else: # если указателя нет
+                return dict[c[num]].value() # вернуть значение
+        elif  self.pattern[num] == Lexer.ELEM_SLICE: # если это срез элемента
+            v = c[num].split('[') # диапазон
+            return dict[v[0]].slice_value(v[1][:-1].strip()) # берем срез
+        elif  self.pattern[num] == Lexer.NUM: # если это число
+            return int(c[num]) # вернуть это число
 
 
     def condition(self): # функция сравнения
