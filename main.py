@@ -42,8 +42,8 @@ class Lexer: # лексический анализ кода
             elif word in self.symbols.keys():
                 result.append(self.symbols[word])
             #elif len(word.replace('0', '').replace('1', '')) == 0:
-            elif len(re.sub(r"\d+", "", word, flags=re.UNICODE)) == 0:
-                result.append(self.NUM)
+            elif len(re.sub(r"\d+", "", word, flags=re.UNICODE)) == 0: # если найдено что-то кроме паттерна
+                result.append(self.NUM) # то это чисто
         return result # возвращает макет строки
 
 
@@ -66,11 +66,11 @@ class Node: # управление узлами. Узлом является а�
             else:
                 self.type = Node.ACT # если это не условия и не цикл, то это операция
         if out:
-            self.out = out # ссылка на выход
+            self.out = out # ссылка на выход на верхний уровень
         if rownum:
             self.rownum = rownum # номер рассматриваемой строки, нужен для маркера
 
-    @staticmethod # метод класса, который ...
+    @staticmethod # метод класса без ссылки на метод класа или сам класс
     def parse(rows, out=None, bias=0): # парсит строки по узлам и уровням (bias -- это смещение маркера)
 
         current = Node()
@@ -214,7 +214,7 @@ class Node: # управление узлами. Узлом является а�
             res = res[1:]
         if '[' in res: # отбрасывает скобки
             res = res.split('[')[0]
-        return res
+        return res # возвращаем имя элемента
 
     @staticmethod
     def pure_slice(word): # функция получает диапазон среза из кода (если есть)
@@ -270,7 +270,7 @@ class Node: # управление узлами. Узлом является а�
                             new_data.append(0) # дописываем в правово края ноль
                             for i in range(len(new_data)): # записываем результат в регистр
                                 dict[c[0]].data[i] = new_data[i]
-                elif len(p) == 7:
+                elif len(p) == 7: # если прибавляется единица (РгА := РгА + РгБ + 1)
                     #print(dict[c[2]]).data
                     dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 1)[0])
         elif p[0] == Lexer.IF: # если строка содержит условие
@@ -368,12 +368,12 @@ class classCounter: # счетчик
         return self.count
 
 
-def convert(string): # конвертер из str в int
-    list=[0]*len(string)
-    for i, l in enumerate(string):
-        if l=="1":
-            list[i]=1
-    return list
+# def convert(string): # конвертер из str в int
+#     list=[0]*len(string)
+#     for i, l in enumerate(string):
+#         if l=="1":
+#             list[i]=1
+#     return list
 
 
 def reset(i): # функция сброса всего
@@ -387,7 +387,7 @@ def reset(i): # функция сброса всего
     start_btn.place(x=20, y=7) # возвращает кнопку "старт"
     #rows = txt.get("1.0", END).splitlines()
     #c.coords('mark',335, 65, 350, 65)
-    i.reset()
+    i.reset() # сброс канваса
     for key in dict: # сбрасывает значения всех элементов путём вызова соответствующей функции в экземпляре каждого элемента
         dict[key].reset()
         #print(key)
@@ -403,9 +403,10 @@ root.geometry('480x900') #размер окна
 
 def scheme_simple(): #
     return tk.Toplevel(root)
-'''new_tk = scheme_simple()
-c = Canvas(new_tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
-c.delete('reg')'''
+
+# new_tk = scheme_simple()
+# c = Canvas(new_tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
+# c.delete('reg')
 
 def scheme_struct(): #
     return tk.Toplevel(root)
@@ -486,13 +487,13 @@ def create_scheme_simple(): # создание поля для простой с
     global mode
     mode = 1 # режим окна рисования
     w = 1
-    for d in dict:
+    for d in dict: # ищем самый длинный регистр для того чтобы подогнать ширину окна
         if type(dict[d]).__name__ == 'Register':
             if len(dict[d].data) > w:
                 w = len(dict[d].data)
     w *= 6
     w += 100
-    h = len(dict)*20+30
+    h = len(dict)*20+30 # настройка высоты окна в зависимости от количества элементов в словаре
     scheme_canvas = Canvas(new_tk, width=w, height=h, bg='white')
     scheme_simple_display(scheme_canvas)
 
@@ -555,10 +556,10 @@ def start(): # функция старта (кнопки "старт")
     pointer_canvas.insert(END, str(size))
 
 
-def step_inside(e):
+def step_inside(e): # обёртка шага со входом
     global currentnode
-    currentnode = currentnode.step_inside()
-    if currentnode:
+    currentnode = currentnode.step_inside() # выполняем узла
+    if currentnode: # если есть ссылка на следующий узел
         pointer_canvas.delete(1.0, END)
         p=''
         for i in range(currentnode.rownum):
@@ -576,7 +577,7 @@ def step_inside(e):
         reset(cc)
 
 
-def step_outside(e):
+def step_outside(e): # обёртка для шага с выходом
     global currentnode
     currentnode = currentnode.step_outside()
     if currentnode:
@@ -597,7 +598,7 @@ def step_outside(e):
         reset(cc)
 
 
-def step_bypass(e):
+def step_bypass(e): # обёртка для шага с обходом
     global currentnode
     currentnode = currentnode.step()
     if currentnode:
@@ -696,7 +697,7 @@ pointer_canvas = Text(mainframe, width=5, height=35, bg='white',spacing1=2, yscr
 txt = Text(mainframe, width=45, height=35, font="14", bg='white', yscrollcommand=scroll.set) # текст поля
 #pointer_canvas.create_line(0,ROWHEIGHT/2+2,10,ROWHEIGHT/2+2, arrow=LAST, tag='pointer')
 
-def OnMouseWheel(event): #
+def OnMouseWheel(event): # привязывает одно событие к двум текстовым полям
     pointer_canvas.yview("scroll", event.delta, "units")
     txt.yview("scroll", event.delta, "units")
     return "break"
@@ -704,7 +705,7 @@ def OnMouseWheel(event): #
 pointer_canvas.bind("<MouseWheel>", OnMouseWheel)
 txt.bind("<MouseWheel>", OnMouseWheel)
 
-def onScroll(*args): #
+def onScroll(*args): # событие прокрутки
     pointer_canvas.yview(*args)
     txt.yview(*args)
 

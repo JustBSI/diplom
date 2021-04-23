@@ -54,24 +54,25 @@ class Register: # регистр
                 d = self.data
             result = 0
             factor = 1
-            for digit in reversed(self.data):
-                result += digit*factor
+            for digit in reversed(d):
+                if digit:
+                    result += factor
                 factor *= 2
             return result
 
-    def slice_value(self, slice):
-        if ':' not in slice:
-            return self.data[int(slice.strip())]
-        else:
-            res = 0
-            count = 0
-            v = slice.strip().split(':')
-            for bit in reversed(self.data[int(v[0]):int(v[1])]):
-                res += bit*(2**count)
-                count += 1
-            return res
+    # def slice_value(self, slice):
+    #     if ':' not in slice:
+    #         return self.data[int(slice.strip())]
+    #     else:
+    #         res = 0
+    #         count = 0
+    #         v = slice.strip().split(':')
+    #         for bit in reversed(self.data[int(v[0]):int(v[1])]):
+    #             res += bit*(2**count)
+    #             count += 1
+    #         return res
 
-    def get(self, slice=None, inv=False):
+    def get(self, slice=None, inv=False): # получение значения регистра
         if not slice:
             return invert(self.data) if inv else self.data
         if ':' not in slice:
@@ -82,7 +83,7 @@ class Register: # регистр
             print(self.data[int(v[0]):int(v[1])+1])
             return invert(self.data[int(v[0]):int(v[1])+1]) if inv else self.data[int(v[0]):int(v[1])+1]
 
-    def set(self, data, slice=None):
+    def set(self, data, slice=None): # устанвливает значение для регистра
         #if type(data).__name__=='str':
         #    if not slice:
         #        for i in range(len(data)):
@@ -215,7 +216,7 @@ class Adder: # сумматор
         if len(a)==self.length and len(b)==self.length: # если длина операндов и сумматора одинаковые
             c=[0]*self.length # результат
             carry=carry_in # перенос
-            for i in reversed(range(self.length)):
+            for i in reversed(range(self.length)): # с младших разрядов
                 #c[i]=(a[i]+b[i]+carry)%2
                 c[i]=a[i]^b[i]^carry
                 carry=1 if (a[i]+b[i]+carry)>1 else 0
