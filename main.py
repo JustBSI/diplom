@@ -504,28 +504,28 @@ def create_scheme_simple(): # создание поля для простой с
 
 #анализ элементной базы
 #ARCH = 'elements.txt'
-ARCH = 'sub_m32_imm8.arch.txt' # выбор файла элементной базы
-f = open(ARCH,'r',encoding='utf-8') # открытие файла
-for row in f: # перебор всех строк
-    if   'Регистр'  in row: # если регистр, то делим на
-        string     = re.split (' ', row)
-        name       = re.split ('\(', string[1])[0] # название
-        capacity   = re.findall(r'\d+', string[1]) # значение
-        dict[name] = Register(int(capacity[0]), name) # создаём элемент в регистре с таким названием и значением
-    elif 'Сумматор' in row:
-        string     = re.split (' ', row)
-        name       = re.split ('\(', string[1])[0]
-        capacity   = re.findall(r'\d+', string[1])
-        dict[name] = Adder(int(capacity[0]), name)
-    elif 'Счётчик' in row:
-        string     = re.split (' ', row)
-        name       = re.split ('\(', string[1])[0]
-        capacity   = re.findall(r'\d+', string[1])
-        if capacity:
-            dict[name] = Counter(name, int(capacity[0]))
-        else:
-            dict[name] = Counter(name)
-f.close()
+#ARCH = 'sub_m32_imm8.arch.txt' # выбор файла элементной базы
+# f = open(ARCH,'r',encoding='utf-8') # открытие файла
+# for row in f: # перебор всех строк
+#     if   'Регистр'  in row: # если регистр, то делим на
+#         string     = re.split (' ', row)
+#         name       = re.split ('\(', string[1])[0] # название
+#         capacity   = re.findall(r'\d+', string[1]) # значение
+#         dict[name] = Register(int(capacity[0]), name) # создаём элемент в регистре с таким названием и значением
+#     elif 'Сумматор' in row:
+#         string     = re.split (' ', row)
+#         name       = re.split ('\(', string[1])[0]
+#         capacity   = re.findall(r'\d+', string[1])
+#         dict[name] = Adder(int(capacity[0]), name)
+#     elif 'Счётчик' in row:
+#         string     = re.split (' ', row)
+#         name       = re.split ('\(', string[1])[0]
+#         capacity   = re.findall(r'\d+', string[1])
+#         if capacity:
+#             dict[name] = Counter(name, int(capacity[0]))
+#         else:
+#             dict[name] = Counter(name)
+# f.close()
 
 
 cc = classCounter() # счётчик
@@ -647,15 +647,41 @@ def save_as_file(): # сохранить как
     file.write(text2save) # записывает
     file.close() # закрывает файл
 
+
+def open_arch(): # открыть архитектуру
+    ARCH = askopenfilename(filetypes=[("Text files", "*.txt")])
+    f = open(ARCH, 'r', encoding='utf-8')  # открытие файла
+    for row in f:  # перебор всех строк
+        if 'Регистр' in row:  # если регистр, то делим на
+            string = re.split(' ', row)
+            name = re.split('\(', string[1])[0]  # название
+            capacity = re.findall(r'\d+', string[1])  # значение
+            dict[name] = Register(int(capacity[0]), name)  # создаём элемент в регистре с таким названием и значением
+        elif 'Сумматор' in row:
+            string = re.split(' ', row)
+            name = re.split('\(', string[1])[0]
+            capacity = re.findall(r'\d+', string[1])
+            dict[name] = Adder(int(capacity[0]), name)
+        elif 'Счётчик' in row:
+            string = re.split(' ', row)
+            name = re.split('\(', string[1])[0]
+            capacity = re.findall(r'\d+', string[1])
+            if capacity:
+                dict[name] = Counter(name, int(capacity[0]))
+            else:
+                dict[name] = Counter(name)
+    f.close()
+
 # настройки верхнего меню
 mainmenu = Menu(root)
 root.config(menu=mainmenu)
 filemenu = Menu(mainmenu, tearoff=0)
 schememenu = Menu(mainmenu, tearoff=0)
 mainmenu.add_cascade(label="Файл", menu=filemenu)
-filemenu.add_command(label="Открыть...", command=open_file)
+filemenu.add_command(label="Открыть код", command=open_file)
+filemenu.add_command(label="Выбрать архитектуру", command=open_arch)
 #filemenu.add_command(label="Сохранить...", command=save_file)
-filemenu.add_command(label="Сохранить как...", command=save_as_file)
+filemenu.add_command(label="Сохранить код", command=save_as_file)
 mainmenu.add_cascade(label="Схема", menu=schememenu)
 schememenu.add_command(label="Структурная схема", command=create_scheme_struct)
 schememenu.add_command(label="Упрощённая схема", command=create_scheme_simple)
