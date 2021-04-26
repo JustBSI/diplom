@@ -480,6 +480,7 @@ def create_scheme_struct(): # создание поля для структур�
     new_tk = scheme_simple()
     scheme_canvas = Canvas(new_tk, width=w, height=h, bg='white') # канвас для схем
     scheme_struct_display(scheme_canvas, draw_file) # открытие окна и запрос файла конфигурации
+    f.close()
 
 def create_scheme_simple(): # создание поля для простой схемы
     new_tk = scheme_simple()
