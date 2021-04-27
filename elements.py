@@ -195,9 +195,10 @@ class Counter: # счётчик
     def value(self): # получить значение
         return self.count
 
-    def display(self, x, y, c, wc): # показ на структурной схеме
-        c.create_text((x + wc) / 2, y + 10, text=self.count, anchor=CENTER)
-        c.create_rectangle(60, 0, 74, 14)
+    def display_struct(self, x, y, c, wc): # показ на структурной схеме
+        c.create_text(x + 80, y + 10, text=self.name, anchor=CENTER, tag='reg')
+        c.create_text(x + 80, y + 30, text=self.count, anchor=CENTER, tag='reg')
+        c.create_rectangle(x+60, y+0, x+100, y+40)
 
     def display_simple(self, x, y, c, wc): # показ на простой схеме
         c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')

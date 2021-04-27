@@ -97,7 +97,7 @@ class Node: # управление узлами. Узлом является а�
         if self.type == Node.ACT: # если узел -- это действие
             self.execute # выполнять
             return self.find_next() # ищет следующий узел
-        elif self.type == Node.IF: # если узел -- это условие
+        elif self.type == Node.IF: # если узел -- это гА' + РгБ'условие
             if self.execute: # проверка выполнения условия (true или false)
                 self.inside.execute_all() # выполняет все узлы уровня
                 if hasattr(self, "next"): # проверка есть ли у узла ссылка на следующий
@@ -160,7 +160,7 @@ class Node: # управление узлами. Узлом является а�
             return current # ссылка на узел, в который попали
 
 
-    def find_next(self): # ищет ссылку на следующий узел
+    def find_next(self): # ищет ссылку на следующий узгА' + РгБ'ел
         if hasattr(self, "next"): # если есть ссылка на следующий узел
             return self.next # ссылка на следующий узел
         else: # если ссылки на следующий нет
@@ -480,6 +480,7 @@ def create_scheme_struct(): # создание поля для структур�
     new_tk = scheme_simple()
     scheme_canvas = Canvas(new_tk, width=w, height=h, bg='white') # канвас для схем
     scheme_struct_display(scheme_canvas, draw_file) # открытие окна и запрос файла конфигурации
+    f.close()
 
 def create_scheme_simple(): # создание поля для простой схемы
     new_tk = scheme_simple()
@@ -664,12 +665,17 @@ def open_arch(): # открыть архитектуру
             dict[name] = Adder(int(capacity[0]), name)
         elif 'Счётчик' in row:
             string = re.split(' ', row)
-            name = re.split('\(', string[1])[0]
-            capacity = re.findall(r'\d+', string[1])
-            if capacity:
-                dict[name] = Counter(name, int(capacity[0]))
+            if '(' in row:
+                name = re.split('\(', string[1])[0]
+                limit = re.findall(r'\d+', string[1])
+                if limit:
+                    dict[name] = Counter(name, int(limit[0]))
+                else:
+                    dict[name] = Counter(name)
             else:
+                name = string[1].strip()
                 dict[name] = Counter(name)
+
     f.close()
 
 # настройки верхнего меню
