@@ -200,8 +200,8 @@ class Counter: # счётчик
         c.create_rectangle(60, 0, 74, 14)
 
     def display_simple(self, x, y, c, wc): # показ на простой схеме
-        c.create_text(x+20, y, text=self.name, anchor=W, tag='reg')
-        c.create_text(x+70, y, text=str(self.count), anchor=W, tag='reg')
+        c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')
+        c.create_text(x+70, y+20, text=str(self.count), anchor=W, tag='reg')
 
 
 class Adder: # сумматор
