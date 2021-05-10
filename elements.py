@@ -186,6 +186,12 @@ class Counter: # счётчик
         else:
             self.count += 1
 
+    def dec(self): # декрементирование
+        if self.count > 0:
+            self.count -= 1
+        else:
+            print("Предупреждение: значение счётчика уже опустилось до нуля и не будет изменено")
+
     def set(self, data): # установка значения
         self.count = int(data)
 
@@ -196,9 +202,9 @@ class Counter: # счётчик
         return self.count
 
     def display_struct(self, x, y, c, wc): # показ на структурной схеме
-        c.create_text(x + 80, y + 10, text=self.name, anchor=CENTER, tag='reg')
-        c.create_text(x + 80, y + 30, text=self.count, anchor=CENTER, tag='reg')
-        c.create_rectangle(x+60, y+0, x+100, y+40)
+        c.create_text(x + 20, y + 10, text=self.name, anchor=CENTER, tag='reg')
+        c.create_text(x + 20, y + 35, text=self.count, anchor=CENTER, tag='reg', font=('Helevtica', 30))
+        c.create_rectangle(x, y+0, x+40, y+60)
 
     def display_simple(self, x, y, c, wc): # показ на простой схеме
         c.create_text(x+20, y+20, text=self.name, anchor=W, tag='reg')

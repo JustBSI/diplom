@@ -12,9 +12,9 @@ dict = {} # словарь с элементами
 class Lexer: # лексический анализ кода
     # типы слов в строках
     # объявление кортежа (каждому типу слов свой номер)
-    ASSIG, ELEM, ADD, NUM, IF, ELSE, WHILE, EQU, MORE, LESS, NOT_EQU, MORE_EQU, LESS_EQU, ELEM_SLICE, RIGHT_SHIFT, LEFT_SHIFT = range(16)
+    ASSIG, ELEM, ADD, NUM, IF, ELSE, WHILE, EQU, MORE, LESS, NOT_EQU, MORE_EQU, LESS_EQU, ELEM_SLICE, RIGHT_SHIFT, LEFT_SHIFT, SUB = range(17)
     # типы операций и их обозначения
-    symbols = {':=': ASSIG, '+': ADD, '=': EQU, '>': MORE, '<': LESS, '!=': NOT_EQU, '>=': MORE_EQU, '<=': LESS_EQU, '>>': RIGHT_SHIFT, '<<': LEFT_SHIFT}
+    symbols = {':=': ASSIG, '+': ADD, '-': SUB, '=': EQU, '>': MORE, '<': LESS, '!=': NOT_EQU, '>=': MORE_EQU, '<=': LESS_EQU, '>>': RIGHT_SHIFT, '<<': LEFT_SHIFT}
     # ключевые слова (циклы и условия)
     keywords = {'если': IF, 'иначе': ELSE, 'пока': WHILE}
 
@@ -270,6 +270,9 @@ class Node: # управление узлами. Узлом является а�
                             new_data.append(0) # дописываем в правово края ноль
                             for i in range(len(new_data)): # записываем результат в регистр
                                 dict[c[0]].data[i] = new_data[i]
+                    elif p[3] == 16: # если вычитание
+                        if type(dict[c[2]]).__name__ == 'Counter':  # если второй операнд счётчик
+                            dict[c[2]].count -= int(c[4])  # уменьшить счётчик на значение
                 elif len(p) == 7: # если прибавляется единица (РгА := РгА + РгБ + 1)
                     #print(dict[c[2]]).data
                     dict[c[0]].set(dict['СМ'].add(dict[c[2]].data, dict[c[4]].data, 1)[0])
@@ -654,10 +657,10 @@ def open_arch(): # открыть архитектуру
     f = open(ARCH, 'r', encoding='utf-8')  # открытие файла
     for row in f:  # перебор всех строк
         if 'Регистр' in row:  # если регистр, то делим на
-            string = re.split(' ', row)
-            name = re.split('\(', string[1])[0]  # название
-            capacity = re.findall(r'\d+', string[1])  # значение
-            dict[name] = Register(int(capacity[0]), name)  # создаём элемент в регистре с таким названием и значением
+            parts = row.split()[1].split('(')
+            name = parts[0].strip()  # название
+            capacity = parts[1].split(')')[0].strip()  # значение
+            dict[name] = Register(int(capacity), name)  # создаём элемент в регистре с таким названием и значением
         elif 'Сумматор' in row:
             string = re.split(' ', row)
             name = re.split('\(', string[1])[0]
