@@ -330,25 +330,17 @@ class Node:  # управление узлами. Узлом является а
         elif self.pattern[num] == Lexer.NUM:  # если это число
             return int(c[num])  # вернуть это число
 
-    def condition(self):  # функция сравнения
+    def condition(self) -> bool:  # функция сравнения
         c = self.row.split()  # строка, с которой работаем
         op1 = self.get_pattern_value(1, c)  # значение первого операнда
         op2 = self.get_pattern_value(3, c)  # значение второго операнда
         # print(op1 == op2)
-        # проверка всех вариантов сравнений и возврат результата сравнения
         if c[2] == '=':
-            return op1 == op2
-        elif c[2] == '>':
-            return op1 > op2
-        elif c[2] == '<':
-            return op1 < op2
-        elif c[2] == '!=':
-            return op1 != op2
-        elif c[2] == '>=':
-            return op1 >= op2
-        elif c[2] == '<=':
-            return op1 <= op2
-        else:
+            c[2] = '=='
+        try:
+            return eval(str(op1) + c[2] + str(op2))
+        except Exception:
+            print(Exception)
             return False
 
 
@@ -365,14 +357,6 @@ class classCounter:  # счетчик
 
     def __repr__(self):
         return self.count
-
-
-# def convert(string): # конвертер из str в int
-#     list=[0]*len(string)
-#     for i, l in enumerate(string):
-#         if l=="1":
-#             list[i]=1
-#     return list
 
 
 def reset(i):  # функция сброса всего
@@ -405,10 +389,6 @@ root.geometry('480x900')  # размер окна
 def scheme_simple():  #
     return tk.Toplevel(root)
 
-
-# new_tk = scheme_simple()
-# c = Canvas(new_tk, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg='white')
-# c.delete('reg')
 
 def scheme_struct():  #
     return tk.Toplevel(root)
@@ -506,36 +486,6 @@ def create_scheme_simple():  # создание поля для простой �
     scheme_simple_display(scheme_canvas)
 
 
-# with open('test2.txt','r',encoding='utf-8') as f:
-#    start = Node.parse(list(f))
-#    start.display()
-
-# анализ элементной базы
-# ARCH = 'elements.txt'
-# ARCH = 'sub_m32_imm8.arch.txt' # выбор файла элементной базы
-# f = open(ARCH,'r',encoding='utf-8') # открытие файла
-# for row in f: # перебор всех строк
-#     if   'Регистр'  in row: # если регистр, то делим на
-#         string     = re.split (' ', row)
-#         name       = re.split ('\(', string[1])[0] # название
-#         capacity   = re.findall(r'\d+', string[1]) # значение
-#         dict[name] = Register(int(capacity[0]), name) # создаём элемент в регистре с таким названием и значением
-#     elif 'Сумматор' in row:
-#         string     = re.split (' ', row)
-#         name       = re.split ('\(', string[1])[0]
-#         capacity   = re.findall(r'\d+', string[1])
-#         dict[name] = Adder(int(capacity[0]), name)
-#     elif 'Счётчик' in row:
-#         string     = re.split (' ', row)
-#         name       = re.split ('\(', string[1])[0]
-#         capacity   = re.findall(r'\d+', string[1])
-#         if capacity:
-#             dict[name] = Counter(name, int(capacity[0]))
-#         else:
-#             dict[name] = Counter(name)
-# f.close()
-
-
 cc = classCounter()  # счётчик
 
 
@@ -547,10 +497,10 @@ def start():  # функция старта (кнопки "старт")
     txt.configure(state=DISABLED)  # запрет на редактирование кода в поле
     start_btn.place_forget()  # прячет кнопку
     # размещает кнопки
-    step_entry_btn.place(x=20, y=7)
+    step_entry_btn .place(x=20, y=7)
     step_detour_btn.place(x=60, y=7)
-    step_exit_btn.place(x=100, y=7)
-    reset_btn.place(x=170, y=7)
+    step_exit_btn  .place(x=100, y=7)
+    reset_btn      .place(x=170, y=7)
     # global pointer
     # pointer = pointer_canvas.create_line(0, ROWHEIGHT / 2 + 2, 10, ROWHEIGHT / 2 + 2, arrow=LAST, tag='pointer')
     global currentnode
@@ -643,10 +593,6 @@ def open_file():  # открытие файла
     # drawer_default_scheme()
 
 
-# рисование схемы с очисткой канваса
-# def drawer_default_scheme():
-
-
 def save_as_file():  # сохранить как
     file = asksaveasfile(mode='w', filetypes=[("Text files", "*.txt")], defaultextension=".txt")  # сохранить как и куда
     if file is None:  # asksaveasfile return `None` if dialog closed with "cancel".
@@ -655,37 +601,6 @@ def save_as_file():  # сохранить как
     text2save = str(txt.get(1.0, END))  # кидает в переменную всё из поля
     file.write(text2save)  # записывает
     file.close()  # закрывает файл
-
-
-'''def open_arch(): # открыть архитектуру
-    ARCH = askopenfilename(filetypes=[("Text files", "*.txt")])
-    f = open(ARCH, 'r', encoding='utf-8')  # открытие файла
-    for row in f:  # перебор всех строк
-        if 'Регистр' in row:  # если регистр, то делим на
-            parts = row.split()[1].split('(')
-            name = parts[0].strip()  # название
-            capacity = parts[1].split(')')[0].strip()  # значение
-            dict[name] = Register(int(capacity), name)  # создаём элемент в регистре с таким названием и значением
-        elif 'Сумматор' in row:
-            string = re.split(' ', row)
-            name = re.split('\(', string[1])[0]
-            capacity = re.findall(r'\d+', string[1])
-            dict[name] = Adder(int(capacity[0]), name)
-        elif 'Счётчик' in row:
-            string = re.split(' ', row)
-            if '(' in row:
-                name = re.split('\(', string[1])[0]
-                limit = re.findall(r'\d+', string[1])
-                if limit:
-                    dict[name] = Counter(name, int(limit[0]))
-                else:
-                    dict[name] = Counter(name)
-            else:
-                name = string[1].strip()
-                dict[name] = Counter(name)
-
-    f.close()
-    print(dict)'''
 
 
 def open_arch() -> None:  # открыть архитектуру
@@ -698,24 +613,23 @@ def open_arch() -> None:  # открыть архитектуру
             case "регистр" | "register", inf:
                 name, capacity = inf.split('(')
                 capacity = int(capacity.split(')')[0])
-                print(f"{name=} {capacity=}")
                 dict[name] = Register(capacity, name)
             case "сумматор" | "adder", inf:
                 name, capacity = inf.split('(')
                 capacity = int(capacity.split(')')[0])
-                print(f"{name=} {capacity=}")
                 dict[name] = Adder(capacity, name)
             case "счётчик" | "counter", inf:
                 if "(" in inf:
                     name, limit = inf.split('(')
                     limit = int(limit.split(')')[0])
-                    print(f"{name=} {limit=}")
                     dict[name] = Counter(name, limit)
                 else:
                     dict[inf] = Counter(inf)
-                    print(inf)
+            case "триггер" | "trigger", inf:
+                dict[inf] = Trigger(inf)
+            case _:
+                print("Неизвестный паттерн")
     f.close()
-
 
 
 # настройки верхнего меню
