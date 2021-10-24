@@ -6,6 +6,31 @@ from elements import *
 import tkinter as tk
 
 dict = {}  # словарь с элементами
+connections = []
+
+
+class Connection:
+
+    # связанные элементы: from => to или to <= from
+    efrom: str
+    eto: str
+
+    # выравнивание при неравной размерности элементов.
+    efrom_align: str = 'right'
+    eto_align: str = 'right'
+
+    efrom_is_slice: bool
+    eto_is_slice: bool
+
+    efrom_slice: tuple
+    eto_slice: tuple
+
+    def __init__(self, efrom: str, eto: str):
+        self.efrom = efrom
+        self.eto = eto
+
+    def __repr__(self):
+        return f'{self.eto} <= {self.efrom}'
 
 
 class Lexer:  # лексический анализ кода
@@ -62,7 +87,7 @@ class NewLexer:
 
     def parse(self, row: str) -> list:
         row = row.split('//')[0] # чистка от строчных комментариев
-        row = re.sub(" +", " ", row.strip())
+        row = re.sub(" +", " ", row.strip()) # убираем сдвоенные, строенные и т.д. пробелы
         new_row = ''
         row_len = len(row)
         i = 0
@@ -657,9 +682,11 @@ def save_as_file():  # сохранить как
 def open_arch() -> None:  # открыть архитектуру
     arch = askopenfilename(filetypes=[("Text files", "*.txt")])
     f = open(arch, 'r', encoding='utf-8')  # открытие файла
+    L = NewLexer(symbols='<= =>')
     for row in f:  # перебор всех строк
-        srow = row.split()
-        srow[0] = srow[0].lower()
+        #srow = row.split()
+        #srow[0] = srow[0].lower()
+        srow = L.parse(row)
         match srow:
             case "регистр" | "register", inf:
                 name, capacity = inf.split('(')
@@ -678,9 +705,15 @@ def open_arch() -> None:  # открыть архитектуру
                     dict[inf] = Counter(inf)
             case "триггер" | "trigger", inf:
                 dict[inf] = Trigger(inf)
+            case eto, '<=', efrom:
+                connections.append(Connection(efrom, eto))
+            case efrom, '=>', eto:
+                connections.append(Connection(efrom, eto))
             case _:
                 print("Неизвестный паттерн")
     f.close()
+    for connection in connections:
+        print(connection)
 
 
 # настройки верхнего меню
@@ -760,4 +793,4 @@ txt.pack(side=LEFT)
 scroll.pack(side=LEFT, fill=Y)
 # txt.config(yscrollcommand=scroll.set)
 
-#root.mainloop()
+root.mainloop()
