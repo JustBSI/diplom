@@ -278,11 +278,10 @@ def save_as_file():  # сохранить как
 def open_arch() -> None:  # открыть архитектуру
     arch = askopenfilename(filetypes=[("Text files", "*.txt")])
     f = open(arch, 'r', encoding='utf-8')  # открытие файла
-    L = NewLexer(symbols='<= =>')
+    L = NewLexer(split_symbols='<= =>')
     for row in f:  # перебор всех строк
-        #srow = row.split()
-        #srow[0] = srow[0].lower()
         srow = L.parse(row)
+        print(srow)
         match srow:
             case "регистр" | "register", inf:
                 name, capacity = inf.split('(')
@@ -306,7 +305,8 @@ def open_arch() -> None:  # открыть архитектуру
             case efrom, '=>', eto:
                 G.Connections.append(Connection(efrom, eto))
             case _:
-                print("Неизвестный паттерн")
+                if srow != '':
+                    print("Неизвестный паттерн")
     f.close()
     #for connection in G.Connections:
     #    print(connection)

@@ -1,5 +1,6 @@
 import globalvars as G  # отдельный файл с глобальными переменными
 from oldlexer import *
+from lexer import *
 
 
 class Node:  # управление узлами. Узлом является абстрактная модель,
@@ -8,11 +9,15 @@ class Node:  # управление узлами. Узлом является а
     types = ['ACT', 'IF', 'ELSE', 'WHILE']
     ACT, IF, ELSE, WHILE = range(4)
 
+    lexer_1 = NewLexer(split_symbols=":= + - = > < != >= <= >> <<", non_split_symbols="[ (")
+    lexer_2 = NewLexer(split_with_delete_symbols="[ (", delete_symbols="] )")
+
     def __init__(self, row=None, out=None, rownum=None):  # функция инициализации узла.
         if row:
             self.row = row  # рассматриваемая сырая строка из кода: РгА := РгА + 1
             self.pattern = Lexer.parse(
                 row)  # передаём паттерну полученную пропарсенную лексером строку: [1, 0, 1, 2, 3]
+            self.srow = Node.lexer_1.parse(row)
             if Lexer.IF in self.pattern:  # если паттерн содержит 4 (IF), то значит строка содержит условие
                 self.type = Node.IF  # присваиваем этому узлу тип if
             elif Lexer.ELSE in self.pattern:
@@ -52,10 +57,10 @@ class Node:  # управление узлами. Узлом является а
 
     def step(self):  # шаг с обходом
         if self.type == Node.ACT:  # если узел -- это действие
-            self.execute  # выполнять
+            self.execute()  # выполнять
             return self.find_next()  # ищет следующий узел
         elif self.type == Node.IF:  # если узел -- это гА' + РгБ'условие
-            if self.execute:  # проверка выполнения условия (true или false)
+            if self.execute():  # проверка выполнения условия (true или false)
                 self.inside.execute_all()  # выполняет все узлы уровня
                 if hasattr(self, "next"):  # проверка есть ли у узла ссылка на следующий
                     if self.next.type == Node.ELSE:  # если тип следующего узла "если"
@@ -74,7 +79,7 @@ class Node:  # управление узлами. Узлом является а
                 else:
                     return self.find_out()  # возвращает ссылку на узел внешнего уровня
         elif self.type == Node.WHILE:  # если узел -- это "пока"
-            while self.execute:  # пока выполняется уловие
+            while self.execute():  # пока выполняется уловие
                 self.inside.execute_all()  # выполнит все узлы уровня
             return self.find_next()  # возвращает ссылку на слдующий уровень
         else:
@@ -83,10 +88,10 @@ class Node:  # управление узлами. Узлом является а
 
     def step_inside(self):  # шаг с заходом
         if self.type == Node.ACT:  # если узел -- это действие
-            self.execute  # выполнить
+            self.execute()  # выполнить
             return self.find_next()  # вернуть ссылку на следующий
         elif self.type == Node.IF:  # если узел -- условие
-            if self.execute:  # если выполняется условие
+            if self.execute():  # если выполняется условие
                 return self.inside  # ссылка на первый узел тела цикла
             else:  # если условие не выполняется
                 if hasattr(self, "next"):  # если у узла есть ссылка на следующий
@@ -97,7 +102,7 @@ class Node:  # управление узлами. Узлом является а
                 else:  # если ссылки на следующий узел нет
                     return self.find_out()  # ссылка на внешний уровень
         elif self.type == Node.WHILE:  # если узел -- while
-            if self.execute:  # если выполняется условие
+            if self.execute():  # если выполняется условие
                 return self.inside  # ссылка на первый узел тела цикла
             else:  # если условие не выполняется
                 return self.find_next()  # вернуть ссылку на следующий
@@ -109,7 +114,7 @@ class Node:  # управление узлами. Узлом является а
         last = self.execute_all()  # довыполняем всё до внешнего уровня
         current = last.find_out()  # ссылка на узел где окажемся после выполения тела
         if current.type == Node.WHILE and last.out is current:  # чтобы не проскочить возможный следущий while
-            while current.execute:  # пока выполняется условие
+            while current.execute():  # пока выполняется условие
                 current.inside.execute_all()  # выполняем тело
             return current.find_next()  # ссылка на следующий узел внешнего уровня
         else:  # если это не while
@@ -191,8 +196,22 @@ class Node:  # управление узлами. Узлом является а
             return G.Elements[Node.pure_name(elem)].get(inv=elem[0] == '-')
 
     # исполнение
-    @property
-    def execute(self):  # функция выполнения
+    def execute(self):
+        match self.srow:
+            case element, ':=', *_:
+                print("Присваивание")
+                print(f"{element=}")
+            case 'пока' | 'while', *_:
+                print("Цикл")
+                return self.check_condition()
+            case 'если' | 'if', *_:
+                print("Если")
+                return self.check_condition()
+            case 'иначе' | 'else', *_:
+                print("Иначе")
+
+    # исполнение
+    def not_execute(self):  # функция выполнения
         c = self.row.split()  # сплитит строку, с которой работаем
         p = self.pattern  # закидываем паттерн для сравнения
         if p[1] == 0:  # если это инструкция присвоения :=
@@ -206,8 +225,9 @@ class Node:  # управление узлами. Узлом является а
                     if p[3] == 2:  # если это сложение
                         if p[2] == 1:  # если первый операнд элемент
                             if p[4] == 1:  # если второй операнд элемент
-                                G.Elements[c[0]].set(G.Elements['СМ'].add(G.Elements[c[2]].data, G.Elements[c[4]].data, 0)[
-                                                   0])  # присвоить элементу сумму значений операндов
+                                G.Elements[c[0]].set(
+                                    G.Elements['СМ'].add(G.Elements[c[2]].data, G.Elements[c[4]].data, 0)[
+                                        0])  # присвоить элементу сумму значений операндов
                             elif p[4] == 3:  # если второй операнд это значение
                                 if type(G.Elements[c[2]]).__name__ == 'Counter':  # если второй операнд счётчик
                                     G.Elements[c[2]].count += int(c[4])  # увеличить счётчик на значение
@@ -239,10 +259,10 @@ class Node:  # управление узлами. Узлом является а
         current = self
         while hasattr(current, "next"):  # пока у текущего есть ссылка на следующий
             if current.type == Node.ACT:  # и если текущий -- это действие
-                current.execute  # выполнить
+                current.execute()  # выполнить
                 current = current.next  # взять ссылку на следующий
             elif current.type == Node.IF:  # если текущий -- if
-                if current.execute:  # и если выполняется условие
+                if current.execute():  # и если выполняется условие
                     current.inside.execute_all()  # выполнить тело if
                     if current.next.type == Node.ELSE:  # если следующий -- это else
                         if hasattr(current.next, "next"):  # если у него есть тело
@@ -256,18 +276,18 @@ class Node:  # управление узлами. Узлом является а
                         if hasattr(current, "next"):  # если после него есть узел
                             current = current.next  # взять ссылку на следующий
             elif current.type == Node.WHILE:  # если это while
-                while current.execute:  # пока выполняется условие
+                while current.execute():  # пока выполняется условие
                     current.inside.execute_all()  # выполнить тело
                 current = current.next  # взять ссылку на следующий
             else:
                 print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
         if current.type == Node.ACT:  # если это действие
-            current.execute  # выполнить
+            current.execute()  # выполнить
         elif current.type == Node.IF:  # если это условие
-            if current.execute:  # если условие выполняется
+            if current.execute():  # если условие выполняется
                 current.inside.execute_all()  # выполнить тело
         elif current.type == Node.WHILE:  # если это while
-            while current.execute:  # пока выполняется условие
+            while current.execute():  # пока выполняется условие
                 current.inside.execute_all()  # выполнить тело
         else:
             print("Ошибка: недопустимый тип узла -- " + Node.types[current.type])
@@ -276,7 +296,8 @@ class Node:  # управление узлами. Узлом является а
     def get_pattern_value(self, num, c):  # получает значение элемента по паттерну
         if self.pattern[num] == Lexer.ELEM:  # если слева элемент
             if '[' in c[num]:  # если есть указатель на конкретный разряд
-                return G.Elements[c[num].split('[')[0]].value(c[num].split('[')[1].split(']')[0].strip())  # вернуть значение
+                return G.Elements[c[num].split('[')[0]].value(
+                    c[num].split('[')[1].split(']')[0].strip())  # вернуть значение
             else:  # если указателя нет
                 return G.Elements[c[num]].value()  # вернуть значение
         elif self.pattern[num] == Lexer.ELEM_SLICE:  # если это срез элемента
@@ -284,6 +305,29 @@ class Node:  # управление узлами. Узлом является а
             return G.Elements[v[0]].slice_value(v[1][:-1].strip())  # берем срез
         elif self.pattern[num] == Lexer.NUM:  # если это число
             return int(c[num])  # вернуть это число
+
+    @classmethod
+    def get_value(cls, part):
+        spart = cls.lexer_2.parse(part)
+        match spart:
+            case elem, bit:
+                return G.Elements[elem].value(bit)
+            case only:
+                elem = only[0]
+                if elem in G.Elements.keys():
+                    return G.Elements[elem].value()
+                else:
+                    return int(elem)
+
+    def check_condition(self) -> bool:
+        val_1 = Node.get_value(self.srow[1])
+        val_2 = Node.get_value(self.srow[3])
+        condition = '==' if self.srow[3] == '=' else self.srow[3]
+        try:
+            return eval(str(val_1) + condition + str(val_2))
+        except Exception:
+            print(Exception)
+            return False
 
     def condition(self) -> bool:  # функция сравнения
         c = self.row.split()  # строка, с которой работаем
