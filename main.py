@@ -286,7 +286,7 @@ def open_arch() -> None:  # открыть архитектуру
             case "регистр" | "register", inf:
                 name, capacity = inf.split('(')
                 capacity = int(capacity.split(')')[0])
-                G.Elements[name] = Register(capacity, name)
+                G.Elements[name] = Register(name, capacity)
             case "сумматор" | "adder", inf:
                 name, capacity = inf.split('(')
                 capacity = int(capacity.split(')')[0])

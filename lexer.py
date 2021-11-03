@@ -63,5 +63,8 @@ class NewLexer:
             else:
                 new_row += row[i]
                 i += 1
+        result = new_row.strip().split()
+        if len(result) == 1:
+            result = result[0]
+        return result
 
-        return new_row.strip().split()

@@ -1,4 +1,5 @@
 from tkinter import *
+from lexer import *
 
 
 def invert(data):  # инвертирование
@@ -11,22 +12,81 @@ def invert(data):  # инвертирование
 
 class Trigger:  # триггер
 
-    def __init__(self, name):
-        self.sign = 0
+    def __init__(self, name: str, data: int = 0):
         self.name = name
+        self.data = data
 
-    def set(self, sign):
-        self.sign = sign
+    def set(self, data: int = 1):
+        self.data = data
 
     def reset(self):
-        self.sign = 0
+        self.data = 0
 
 
 class Register:  # регистр
 
-    def __init__(self, n, name):
-        self.data = [0] * n
+    UP, DOWN = 0, 1
+    slice_lexer = NewLexer(split_with_delete_symbols=":")
+
+    data: list
+    length: int
+    name: str
+    direction: int | bool
+
+    def __init__(self, name: str, length: int = 8, direction: int | bool = DOWN) -> None:
+        self.data = [0] * length
+        self.length = length
         self.name = name
+        self.direction = direction
+
+    def true_bit_num(self, bit: int | str) -> int:
+        bit = int(bit)
+        return bit if self.direction == self.DOWN else self.length - bit
+
+    def get_bits(self, slice: str = '') -> list:
+        if slice:
+            match self.slice_lexer.parse(slice):
+                case bit_1, bit_2:
+                    bit_from = self.true_bit_num(bit_1)
+                    bit_to = self.true_bit_num(bit_2)
+                    return self.data[bit_from:bit_to]
+                case bit:
+                    bit = self.true_bit_num(bit)
+                    return [self.data[bit]]
+        else:
+            return self.data
+
+    def get_value(self, slice: str = '') -> int:
+        bits = self.get_bits(slice)
+        value = 0
+        factor = 1
+        for bit in reversed(bits):
+            if bit:
+                value += factor
+            factor *= 2
+        return value
+
+    def set_bits(self, data: list | int, slice: int | str = '') -> None:
+        if slice:
+            match self.slice_lexer.parse(slice):
+                case bit_1, bit_2:
+                    bit_from = self.true_bit_num(bit_1)
+                    bit_to = self.true_bit_num(bit_2)
+                    self.data[bit_from:bit_to] = data
+                case bit:
+                    if type(data) == list:
+                        data = data[0]
+                    bit = self.true_bit_num(bit)
+                    self.data[bit] = data
+        else:
+            if len(data) <= len(self.data):
+                self.data[0:len(data)-1] = data
+            else:
+                self.data = data[0:len(data) - 1]
+
+
+
+
 
     # def set(self, data):
     #    l = len(self.data)

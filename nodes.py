@@ -9,15 +9,17 @@ class Node:  # управление узлами. Узлом является а
     types = ['ACT', 'IF', 'ELSE', 'WHILE']
     ACT, IF, ELSE, WHILE = range(4)
 
-    lexer_1 = NewLexer(split_symbols=":= + - = > < != >= <= >> <<", non_split_symbols="[ (")
-    lexer_2 = NewLexer(split_with_delete_symbols="[ (", delete_symbols="] )")
+    row_lexer = NewLexer(split_symbols=":= + - = > < != >= <= >> <<", non_split_symbols="[ :")
+    element_lexer = NewLexer(non_split_symbols=":", split_with_delete_symbols="[ (", delete_symbols="] )")
+
+    inside: any
 
     def __init__(self, row=None, out=None, rownum=None):  # функция инициализации узла.
         if row:
             self.row = row  # рассматриваемая сырая строка из кода: РгА := РгА + 1
             self.pattern = Lexer.parse(
                 row)  # передаём паттерну полученную пропарсенную лексером строку: [1, 0, 1, 2, 3]
-            self.srow = Node.lexer_1.parse(row)
+            self.srow = Node.row_lexer.parse(row)
             if Lexer.IF in self.pattern:  # если паттерн содержит 4 (IF), то значит строка содержит условие
                 self.type = Node.IF  # присваиваем этому узлу тип if
             elif Lexer.ELSE in self.pattern:
@@ -196,11 +198,23 @@ class Node:  # управление узлами. Узлом является а
             return G.Elements[Node.pure_name(elem)].get(inv=elem[0] == '-')
 
     # исполнение
-    def execute(self):
+    def execute(self) -> None | bool:
         match self.srow:
             case element, ':=', *_:
                 print("Присваивание")
-                print(f"{element=}")
+                expression = self.srow[2:]
+                match expression:
+                    case only:
+                        sonly = self.element_lexer.parse(only[0])
+                        match sonly:
+                            case element, slice:
+                                if only in G.Elements.keys():
+                                    G.Elements[element].set_bits(G.Elements[only].get_bits(slice), slice)
+                            case only:
+                                if only in G.Elements.keys():
+                                    G.Elements[element].set_bits(G.Elements[only].data)
+                                else:
+                                    G.Elements[element].set_bits(list(only))
             case 'пока' | 'while', *_:
                 print("Цикл")
                 return self.check_condition()
@@ -306,9 +320,17 @@ class Node:  # управление узлами. Узлом является а
         elif self.pattern[num] == Lexer.NUM:  # если это число
             return int(c[num])  # вернуть это число
 
+    """@classmethod
+    def parse_element(cls, elem: str):
+        selem = cls.element_lexer.parse(elem)
+        match selem:
+            case elem, first_bit, last_bit:"""
+
+
+
     @classmethod
     def get_value(cls, part):
-        spart = cls.lexer_2.parse(part)
+        spart = cls.element_lexer.parse(part)
         match spart:
             case elem, bit:
                 return G.Elements[elem].value(bit)
