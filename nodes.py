@@ -1,33 +1,47 @@
 import globalvars as G  # отдельный файл с глобальными переменными
-from oldlexer import *
+#from oldlexer import *
 from lexer import *
 
 
 class Node:  # управление узлами. Узлом является абстрактная модель,
-    # представляющая исполняемую инструкцию и возможные переходы к другим инструкциям.
-    # типы узлов
+
+
+    if G.MODE == G.NEW:
+        row_lexer = Lexer(split_symbols=":= + - = > < != >= <= >> <<", non_split_symbols="[ :")
+        element_lexer = Lexer(non_split_symbols=":", split_with_delete_symbols="[ (", delete_symbols="] )")
+    #elif G.MODE == G.OLD:
+        # представляющая исполняемую инструкцию и возможные переходы к другим инструкциям.
+        # типы узлов
     types = ['ACT', 'IF', 'ELSE', 'WHILE']
     ACT, IF, ELSE, WHILE = range(4)
-
-    row_lexer = NewLexer(split_symbols=":= + - = > < != >= <= >> <<", non_split_symbols="[ :")
-    element_lexer = NewLexer(non_split_symbols=":", split_with_delete_symbols="[ (", delete_symbols="] )")
 
     inside: any
 
     def __init__(self, row=None, out=None, rownum=None):  # функция инициализации узла.
         if row:
             self.row = row  # рассматриваемая сырая строка из кода: РгА := РгА + 1
-            self.pattern = Lexer.parse(
-                row)  # передаём паттерну полученную пропарсенную лексером строку: [1, 0, 1, 2, 3]
-            self.srow = Node.row_lexer.parse(row)
-            if Lexer.IF in self.pattern:  # если паттерн содержит 4 (IF), то значит строка содержит условие
-                self.type = Node.IF  # присваиваем этому узлу тип if
-            elif Lexer.ELSE in self.pattern:
-                self.type = Node.ELSE
-            elif Lexer.WHILE in self.pattern:
-                self.type = Node.WHILE
-            else:
-                self.type = Node.ACT  # если это не условия и не цикл, то это операция
+            if G.MODE == G.NEW:
+                self.srow = Node.row_lexer.parse(row)
+                match self.srow[0]:
+                    case 'пока' | 'while':
+                        self.type = Node.WHILE
+                    case 'если' | 'if':
+                        self.type = Node.IF
+                    case 'иначе' | 'else':
+                        self.type = Node.ELSE
+                    case _:
+                        self.type = Node.ACT
+            elif G.MODE == G.OLD:
+                self.pattern = Lexer.parse(
+                    row)  # передаём паттерну полученную пропарсенную лексером строку: [1, 0, 1, 2, 3]
+                if Lexer.IF in self.pattern:  # если паттерн содержит 4 (IF), то значит строка содержит условие
+                    self.type = Node.IF  # присваиваем этому узлу тип if
+                elif Lexer.ELSE in self.pattern:
+                    self.type = Node.ELSE
+                elif Lexer.WHILE in self.pattern:
+                    self.type = Node.WHILE
+                else:
+                    self.type = Node.ACT  # если это не условия и не цикл, то это операция
         if out:
             self.out = out  # ссылка на выход на верхний уровень
         if rownum:
@@ -199,75 +213,81 @@ class Node:  # управление узлами. Узлом является а
 
     # исполнение
     def execute(self) -> None | bool:
-        match self.srow:
-            case element, ':=', *_:
-                print("Присваивание")
-                expression = self.srow[2:]
-                match expression:
-                    case only:
-                        sonly = self.element_lexer.parse(only[0])
-                        match sonly:
-                            case element, slice:
-                                if only in G.Elements.keys():
-                                    G.Elements[element].set_bits(G.Elements[only].get_bits(slice), slice)
-                            case only:
-                                if only in G.Elements.keys():
-                                    G.Elements[element].set_bits(G.Elements[only].data)
-                                else:
-                                    G.Elements[element].set_bits(list(only))
-            case 'пока' | 'while', *_:
-                print("Цикл")
-                return self.check_condition()
-            case 'если' | 'if', *_:
-                print("Если")
-                return self.check_condition()
-            case 'иначе' | 'else', *_:
-                print("Иначе")
+        if G.MODE == G.NEW:
+            match self.srow:
+                case element, ':=', *_:
+                    print("Присваивание")
+                    expression = self.srow[2:]
+                    match expression:
+                        case only:
+                            sonly = self.element_lexer.parse(only[0])
+                            match sonly:
+                                case element, slice:
+                                    if only in G.Elements.keys():
+                                        G.Elements[element].set_bits(G.Elements[only].get_bits(slice), slice)
+                                case only:
+                                    if only in G.Elements.keys():
+                                        G.Elements[element].set_bits(G.Elements[only].data)
+                                    else:
+                                        if only[0] == 'b':
+                                            G.Elements[element].set_bits(list(map(int, list(only[1:]))))
+                                        elif only[0] == 'h':
+                                            value = int(only[1:], 16)
+                                            G.Elements[element].set_bits(list(map(int, list(bin(value)[2:]))))
+                                        else:
+                                            G.Elements[element].set_bits(list(map(int, list(bin(int(only)[2:])))))
 
-    # исполнение
-    def not_execute(self):  # функция выполнения
-        c = self.row.split()  # сплитит строку, с которой работаем
-        p = self.pattern  # закидываем паттерн для сравнения
-        if p[1] == 0:  # если это инструкция присвоения :=
-            if p[0] == 1:  # если слева элемент
-                if len(p) == 3:  # проверка на правильность операции (РгА := 1)
-                    if p[2] == 3:  # если справа значение
-                        Node.set_elem(c[0], c[2])  # присваивает значение переменной
-                    elif p[2] == 1:  # если справа элемент
-                        Node.set_elem(c[0], Node.get_elem(c[2]))  # присваивает переменной значение другой переменной
-                elif len(p) == 5:  # если строка вида РгА := РгБ + 1
-                    if p[3] == 2:  # если это сложение
-                        if p[2] == 1:  # если первый операнд элемент
-                            if p[4] == 1:  # если второй операнд элемент
-                                G.Elements[c[0]].set(
-                                    G.Elements['СМ'].add(G.Elements[c[2]].data, G.Elements[c[4]].data, 0)[
-                                        0])  # присвоить элементу сумму значений операндов
-                            elif p[4] == 3:  # если второй операнд это значение
-                                if type(G.Elements[c[2]]).__name__ == 'Counter':  # если второй операнд счётчик
-                                    G.Elements[c[2]].count += int(c[4])  # увеличить счётчик на значение
-                    elif p[3] == 14:  # если сдвиг вправо
-                        if type(G.Elements[c[2]]).__name__ == 'Register':  # если слева регистр
-                            new_data = [0] + G.Elements[c[2]].data[:-1]  # формируется новое значение
-                            for i in range(len(new_data)):  # записываем результат в регистр
-                                G.Elements[c[0]].data[i] = new_data[i]
-                    elif p[3] == 15:  # если сдвиг влево
-                        if type(G.Elements[c[2]]).__name__ == 'Register':  # если слева регистр
-                            new_data = G.Elements[c[2]].data[1:]  # формируется новое значение
-                            new_data.append(0)  # дописываем в правово края ноль
-                            for i in range(len(new_data)):  # записываем результат в регистр
-                                G.Elements[c[0]].data[i] = new_data[i]
-                    elif p[3] == 16:  # если вычитание
-                        if type(G.Elements[c[2]]).__name__ == 'Counter':  # если второй операнд счётчик
-                            G.Elements[c[2]].count -= int(c[4])  # уменьшить счётчик на значение
-                elif len(p) == 7:  # если прибавляется единица (РгА := РгА + РгБ + 1)
-                    # print(G.Elements[c[2]]).data
-                    G.Elements[c[0]].set(G.Elements['СМ'].add(G.Elements[c[2]].data, G.Elements[c[4]].data, 1)[0])
-        elif p[0] == Lexer.IF:  # если строка содержит условие
-            return self.condition()  # вернуть результат
-        elif p[0] == Lexer.WHILE:  # если строка содержит цикл
-            return self.condition()  # вернуть результат
-        # else:
-        # print('nothing was done')
+                case 'пока' | 'while', *_:
+                    print("Цикл")
+                    return self.check_condition()
+                case 'если' | 'if', *_:
+                    print("Если")
+                    return self.check_condition()
+                case 'иначе' | 'else', *_:
+                    print("Иначе")
+        elif G.MODE == G.OLD:
+            c = self.row.split()  # сплитит строку, с которой работаем
+            p = self.pattern  # закидываем паттерн для сравнения
+            if p[1] == 0:  # если это инструкция присвоения :=
+                if p[0] == 1:  # если слева элемент
+                    if len(p) == 3:  # проверка на правильность операции (РгА := 1)
+                        if p[2] == 3:  # если справа значение
+                            Node.set_elem(c[0], c[2])  # присваивает значение переменной
+                        elif p[2] == 1:  # если справа элемент
+                            Node.set_elem(c[0], Node.get_elem(c[2]))  # присваивает переменной значение другой переменной
+                    elif len(p) == 5:  # если строка вида РгА := РгБ + 1
+                        if p[3] == 2:  # если это сложение
+                            if p[2] == 1:  # если первый операнд элемент
+                                if p[4] == 1:  # если второй операнд элемент
+                                    G.Elements[c[0]].set(
+                                        G.Elements['СМ'].add(G.Elements[c[2]].data, G.Elements[c[4]].data, 0)[
+                                            0])  # присвоить элементу сумму значений операндов
+                                elif p[4] == 3:  # если второй операнд это значение
+                                    if type(G.Elements[c[2]]).__name__ == 'Counter':  # если второй операнд счётчик
+                                        G.Elements[c[2]].count += int(c[4])  # увеличить счётчик на значение
+                        elif p[3] == 14:  # если сдвиг вправо
+                            if type(G.Elements[c[2]]).__name__ == 'Register':  # если слева регистр
+                                new_data = [0] + G.Elements[c[2]].data[:-1]  # формируется новое значение
+                                for i in range(len(new_data)):  # записываем результат в регистр
+                                    G.Elements[c[0]].data[i] = new_data[i]
+                        elif p[3] == 15:  # если сдвиг влево
+                            if type(G.Elements[c[2]]).__name__ == 'Register':  # если слева регистр
+                                new_data = G.Elements[c[2]].data[1:]  # формируется новое значение
+                                new_data.append(0)  # дописываем в правово края ноль
+                                for i in range(len(new_data)):  # записываем результат в регистр
+                                    G.Elements[c[0]].data[i] = new_data[i]
+                        elif p[3] == 16:  # если вычитание
+                            if type(G.Elements[c[2]]).__name__ == 'Counter':  # если второй операнд счётчик
+                                G.Elements[c[2]].count -= int(c[4])  # уменьшить счётчик на значение
+                    elif len(p) == 7:  # если прибавляется единица (РгА := РгА + РгБ + 1)
+                        # print(G.Elements[c[2]]).data
+                        G.Elements[c[0]].set(G.Elements['СМ'].add(G.Elements[c[2]].data, G.Elements[c[4]].data, 1)[0])
+            elif p[0] == Lexer.IF:  # если строка содержит условие
+                return self.condition()  # вернуть результат
+            elif p[0] == Lexer.WHILE:  # если строка содержит цикл
+                return self.condition()  # вернуть результат
+            # else:
+            # print('nothing was done')
 
     def execute_all(self):  # выполнение всего уровня
         current = self

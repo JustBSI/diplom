@@ -1,5 +1,6 @@
 from tkinter import *
 from lexer import *
+from copy import copy
 
 
 def invert(data):  # инвертирование
@@ -26,7 +27,8 @@ class Trigger:  # триггер
 class Register:  # регистр
 
     UP, DOWN = 0, 1
-    slice_lexer = NewLexer(split_with_delete_symbols=":")
+    if G.MODE == G.NEW:
+        slice_lexer = Lexer(split_with_delete_symbols=":")
 
     data: list
     length: int
@@ -80,9 +82,11 @@ class Register:  # регистр
                     self.data[bit] = data
         else:
             if len(data) <= len(self.data):
-                self.data[0:len(data)-1] = data
-            else:
-                self.data = data[0:len(data) - 1]
+                self.data[0:len(data)] = data
+                self.data = data[0:len(data)]
+
+    def set_value(self, value: int, slice: int | str = '') -> None:
+        self.set_bits(list(bin(value)[2:]), slice)
 
 
 

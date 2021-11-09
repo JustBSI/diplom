@@ -275,41 +275,73 @@ def save_as_file():  # сохранить как
     file.close()  # закрывает файл
 
 
-def open_arch() -> None:  # открыть архитектуру
-    arch = askopenfilename(filetypes=[("Text files", "*.txt")])
-    f = open(arch, 'r', encoding='utf-8')  # открытие файла
-    L = NewLexer(split_symbols='<= =>')
-    for row in f:  # перебор всех строк
-        srow = L.parse(row)
-        print(srow)
-        match srow:
-            case "регистр" | "register", inf:
-                name, capacity = inf.split('(')
-                capacity = int(capacity.split(')')[0])
-                G.Elements[name] = Register(name, capacity)
-            case "сумматор" | "adder", inf:
-                name, capacity = inf.split('(')
-                capacity = int(capacity.split(')')[0])
-                G.Elements[name] = Adder(capacity, name)
-            case "счётчик" | "counter", inf:
-                if "(" in inf:
-                    name, limit = inf.split('(')
-                    limit = int(limit.split(')')[0])
-                    G.Elements[name] = Counter(name, limit)
+if G.MODE == G.NEW:
+    def open_arch() -> None:  # открыть архитектуру
+        arch = askopenfilename(filetypes=[("Text files", "*.txt")])
+        f = open(arch, 'r', encoding='utf-8')  # открытие файла
+        L = Lexer(split_symbols='<= =>')
+        for row in f:  # перебор всех строк
+            srow = L.parse(row)
+            print(srow)
+            match srow:
+                case "регистр" | "register", inf:
+                    name, capacity = inf.split('(')
+                    capacity = int(capacity.split(')')[0])
+                    G.Elements[name] = Register(name, capacity)
+                case "сумматор" | "adder", inf:
+                    name, capacity = inf.split('(')
+                    capacity = int(capacity.split(')')[0])
+                    G.Elements[name] = Adder(capacity, name)
+                case "счётчик" | "counter", inf:
+                    if "(" in inf:
+                        name, limit = inf.split('(')
+                        limit = int(limit.split(')')[0])
+                        G.Elements[name] = Counter(name, limit)
+                    else:
+                        G.Elements[inf] = Counter(inf)
+                case "триггер" | "trigger", inf:
+                    G.Elements[inf] = Trigger(inf)
+                case eto, '<=', efrom:
+                    G.Connections.append(Connection(efrom, eto))
+                case efrom, '=>', eto:
+                    G.Connections.append(Connection(efrom, eto))
+                case _:
+                    if srow != '':
+                        print("Неизвестный паттерн")
+        f.close()
+        #for connection in G.Connections:
+        #    print(connection)
+
+elif G.MODE == G.OLD:
+    def open_arch(): # открыть архитектуру
+        ARCH = askopenfilename(filetypes=[("Text files", "*.txt")])
+        f = open(ARCH, 'r', encoding='utf-8')  # открытие файла
+        for row in f:  # перебор всех строк
+            if 'регистр' in row:  # если регистр, то делим на
+                parts = row.split()[1].split('(')
+                name = parts[0].strip()  # название
+                capacity = parts[1].split(')')[0].strip()  # значение
+                G.Elements[name] = Register(name, int(capacity))  # создаём элемент в регистре с таким названием и значением
+            elif 'сумматор' in row:
+                string = re.split(' ', row)
+                name = re.split('\(', string[1])[0]
+                capacity = re.findall(r'\d+', string[1])
+                G.Elements[name] = Adder(int(capacity[0]), name)
+            elif 'счётчик' in row:
+                string = re.split(' ', row)
+                if '(' in row:
+                    name = re.split('\(', string[1])[0]
+                    limit = re.findall(r'\d+', string[1])
+                    if limit:
+                        G.Elements[name] = Counter(name, int(limit[0]))
+                    else:
+                        G.Elements[name] = Counter(name)
                 else:
-                    G.Elements[inf] = Counter(inf)
-            case "триггер" | "trigger", inf:
-                G.Elements[inf] = Trigger(inf)
-            case eto, '<=', efrom:
-                G.Connections.append(Connection(efrom, eto))
-            case efrom, '=>', eto:
-                G.Connections.append(Connection(efrom, eto))
-            case _:
-                if srow != '':
-                    print("Неизвестный паттерн")
-    f.close()
-    #for connection in G.Connections:
-    #    print(connection)
+                    name = string[1].strip()
+                    G.Elements[name] = Counter(name)
+
+        f.close()
+        print(dict)
 
 
 # настройки верхнего меню
